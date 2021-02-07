@@ -1,3 +1,8 @@
+// Markdown language
+https://www.markdownguide.org/basic-syntax/
+video https://www.youtube.com/watch?v=itUrxH-rksc&list=PLP-nAdHo5zyIEqAf98sg_3Vg-rTmXXLtX&index=4
+min = 6:51
+
 > npm install -g npm@latest
 > npm install -g truffle@5.0.2 or
 > truffle init
@@ -7,13 +12,24 @@
 
 * Deploy smart-contract
 > truffle migrate
+> truffle migrate --reset
 
-# Check our deployed smart-contract
+### List tasks in the smart contract
+1. List tasks in the smart contract
+2. list tasks in the console
+3. List tasks in the client side application
+4. List tasks in the test
+
+### Check our deployed smart-contract
 > truffle console
 
->> todoList = await TodoList.deployed()
->> todoList - see contract
->> todoList.address
->> todoList.taskCount()
->> taskCount = await todoList.taskCount()
->> taskCount.toNumber() -- should be zero for begin
+-> todoList = await TodoList.deployed() \
+-> todoList - see contract \
+-> todoList.address \
+-> todoList.taskCount() \
+-> taskCount = await todoList.taskCount() \
+-> taskCount.toNumber() -- it sshould be zero for begin \
+-> task = await todoList.tasks(1) \
+-> task \
+-> task.id.toNumber() \
+-> task.content \

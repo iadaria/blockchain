@@ -1,12 +1,3 @@
-/* "bootstrap": "4.1.3",
-    "chai": "^4.1.2",
-    "chai-as-promised": "^7.1.1",
-    "chai-bignumber": "^2.0.2",
-    "lite-server": "^2.3.0",
-    "nodemon": "^1.17.3",
-    "truffle": "5.0.2",
-    "truffle-contract": "3.0.6" */
-
 // Markdown language
 https://www.markdownguide.org/basic-syntax/
 video https://www.youtube.com/watch?v=itUrxH-rksc&list=PLP-nAdHo5zyIEqAf98sg_3Vg-rTmXXLtX&index=4

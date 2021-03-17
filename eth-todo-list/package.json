@@ -19,8 +19,12 @@
     "chai-as-promised": "^7.1.1",
     "chai-bignumber": "^3.0.0",
     "lite-server": "^2.6.1",
-    "nodemon": "^2.0.7",
-    "truffle": "^5.1.65",
-    "truffle-contract": "^4.0.31"
+    "nodemon": "^2.0.7"
+  },
+  "dependencies": {
+    "@truffle/contract": "^4.3.8",
+    "eslint": "^7.20.0",
+    "source-map-support": "^0.5.19",
+    "truffle": "^5.1.65"
   }
 }

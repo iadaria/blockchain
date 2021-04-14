@@ -2,7 +2,7 @@
 https://www.markdownguide.org/basic-syntax/
 video https://www.youtube.com/watch?v=itUrxH-rksc&list=PLP-nAdHo5zyIEqAf98sg_3Vg-rTmXXLtX&index=4
 web3 + Metamask to read https://awantoch.medium.com/how-to-connect-web3-js-to-metamask-in-2020-fee2b2edf58a
-min = 7:30:41
+min = 7:39:56
 
 see https://www.trufflesuite.com/tutorials/building-testing-frontend-app-truffle-3
 

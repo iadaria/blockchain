@@ -66,33 +66,33 @@ App = {
     const taskCount = await App.todoList.taskCount();
     const $taskTemplate = $('.taskTemplate');
 
-    console.log(taskCount);
+    console.log($taskTemplate);
     // Render out each task with a new task template
-    // for(let i = 1; i <= taskCount; i++) {
-    //   // Fetch the task data from the blockchain
-    //   const task = await App.todoList.tasks(i);
-    //   const taskId = task[0].toNumber();
-    //   const taskContent = task[1]
-    //   const taskCompleted = task[2];
+    for(let i = 1; i <= taskCount; i++) {
+      // Fetch the task data from the blockchain
+      const task = await App.todoList.tasks(i);
+      const taskId = task[0].toNumber();
+      const taskContent = task[1]
+      const taskCompleted = task[2];
 
-    //   // Create the html for the task
-    //   const $newTaskTemplate = $taskTemplate.clone();
-    //   $newTaskTemplate.find('.content').html(taskContent);
-    //   $newTaskTemplate.find('.input')
-    //     .prop('name', taskId)
-    //     .prop('checked', taskCompleted);
-    //     //.on('click', App.toggleCompleted)
+      // Create the html for the task
+      const $newTaskTemplate = $taskTemplate.clone();
+      $newTaskTemplate.find('.content').html(taskContent);
+      $newTaskTemplate.find('.input')
+         .prop('name', taskId)
+         .prop('checked', taskCompleted)
+         .on('click', App.toggleCompleted);
 
-    //   // Put the task in the correct list
-    //   if (taskCompleted) {
-    //     $('#completedTaskList').append($newTaskTemplate);
-    //   } else {
-    //     $('#taskList').append($newTaskTemplate);
-    //   }
-    // }
+      // Put the task in the correct list
+      if (taskCompleted) {
+        $('#completedTaskList').append($newTaskTemplate);
+      } else {
+        $('#taskList').append($newTaskTemplate);
+      }
 
-    // // Show the task
-    // $newTaskTemplate.show();
+    // Show the task
+    $newTaskTemplate.show();
+    }
   },
 
   render: async () => {

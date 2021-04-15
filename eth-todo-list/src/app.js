@@ -48,17 +48,26 @@ App = {
   loadAccount: async() => {
     let accounts = await window.web3.eth.getAccounts();
     App.account = accounts[0];
+    App.web3.setProvider('ws://localhost:7545');
+    App.web3.eth.setProvider('ws://localhost:7545');
+    App.web3.eth.defaultAccount = accounts[0];
     console.log('account', App.account);
   },
 
   loadContract: async() => {
     const todoList = await $.getJSON('TodoList.json');
     console.log(todoList);
+    /* App.contracts.TodoList = TruffleContract({
+      abi: todoList,
+      address: App.account,
+    }); */
     App.contracts.TodoList = TruffleContract(todoList);
     App.contracts.TodoList.setProvider(App.web3.currentProvider);
 
     // Hydrate the smart contract with values from the blockchain
     App.todoList = await App.contracts.TodoList.deployed();
+
+    //await App.contracts.todoList.distributePrizesk({ from: App.account});
   },
 
   renderTasks: async () => {
@@ -111,6 +120,13 @@ App = {
 
     // Update loading state
     App.setLoading(false);
+  },
+
+  createTask: async () => {
+    //App.setLoading(true);
+    const content = $('#newTask').val();
+    App.todoList.createTask(content);
+    //window.location.reload();
   },
 
   setLoading: (isLoading) => {

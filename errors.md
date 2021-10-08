@@ -1,0 +1,1 @@
+* "contract returned values aren't valid did it run out of gas..." - solved: "> truffle migrate --reset" and before delete build/contracts TodoList.json

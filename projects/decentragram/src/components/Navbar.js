@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-//import Identicon from 'identicon.js';
+import Identicon from 'identicon.js';
 import photo from '../photo.png'
 
 class Navbar extends Component {
@@ -19,7 +19,7 @@ class Navbar extends Component {
         <ul className="navbar-nav px-3">
           <li className="nav-item text-nowrap d-none d-sm-none d-sm-block">
             <small className="text-secondary">
-              <small id="account">{'0x0'}</small>
+              <small id="account">{this.props.account}</small>
             </small>
             { this.props.account
               ? <img

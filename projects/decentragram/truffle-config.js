@@ -81,7 +81,7 @@ module.exports = {
   contracts_build_directory: './src/abis',
   //migrations_directory: './',
   // Configure your compilers
-  workingDirectory: './src',
+  //workingDirectory: './src',
   compilers: {
     solc: {
       // version: "0.5.1",    // Fetch exact version from solc-bin (default: truffle's version)

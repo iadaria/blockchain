@@ -1,0 +1,21 @@
+### TODO
+- Instagram youtube
+- Pets - truffle docs
+- erc20 youtube
+- dai
+- ethereum wallet
+- metamask docs
+- dai token (google)
+- tron token (youtube)
+- truffle docs
+- ethereumjs-wallet
+- ethereumjs-tx
+- ethereum-client - npm electrum is bitcoin wallet service
+- Solidity docs translate and practice
+- bitcoinjs-lib
+- bitcoinjs5
+- coinselect
+- book (sample)
+
+- https://medium.com/@harshagoli/so-you-want-to-build-an-ethereum-hd-wallet-cb2b7d7e4998
+- https://medium.com/@georgeczurlanis/getting-started-with-an-ethereum-blockchain-testnet-with-web3-and-react-js-33775777de39

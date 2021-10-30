@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --watchAll",
     "dev-block": "nodemon block",
     "dev-test": "nodemon dev-test",
     "eslint": "./node_modules/.bin/eslint --init"

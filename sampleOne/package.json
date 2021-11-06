@@ -7,7 +7,12 @@
     "test": "jest --watchAll",
     "dev-block": "nodemon block",
     "dev-test": "nodemon dev-test",
-    "eslint": "./node_modules/.bin/eslint --init"
+    "eslint": "./node_modules/.bin/eslint --init",
+    "start": "node ./app",
+    "dev": "nodemon ./app",
+    "start-one": "npm run dev",
+    "start-two": "HTTP_PORT=3002 P2P_PORT=5002 PEERS=ws://localhost:5001 npm run dev",
+    "start-three": "HTTP_PORT=3003 P2P_PORT=5003 PEERS=ws://localhost:5001,ws://localhost:5002 npm run dev"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +25,8 @@
     "prettier": "2.4.1"
   },
   "dependencies": {
-    "crypto-js": "^4.1.1"
+    "crypto-js": "^4.1.1",
+    "express": "^4.17.1",
+    "ws": "^8.2.3"
   }
 }

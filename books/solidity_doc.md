@@ -103,17 +103,18 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF(64 позици
 pragma solidity ^0.8.4;
 
 contract Coin {
-    // The keyword "public" makes variables
-    // accessible from other contracts
+    // Ключевое слово "public" делает переменные
+    // доступными для других контрактов
     address public minter;
     mapping (address => uint) public balances;
 
-    // Events allow clients to react to specific
-    // contract changes you declare
+    // События позволяют клиентам реагировать на
+    // определенные изменения, которые вы объявляете
     event Sent(address from, address to, uint amount);
 
-    // Constructor code is only run when the contract
-    // is created
+
+    // Код в конструкторе запускается только 
+    // только один раз - при создании контракта
     constructor() {
         minter = msg.sender;
     }

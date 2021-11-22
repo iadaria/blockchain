@@ -49,4 +49,26 @@ describe('Transaction', () => {
       expect(transaction).toEqual(undefined);
     });
   });
+
+  describe('and updating a transaction', () => {
+    let nextAmount, nextRecipient;
+
+    beforeEach(() => {
+      nextAmount = 20;
+      nextRecipient = 'n3xt-address';
+      transaction = transaction.update(wallet, nextRecipient, nextAmount);
+    });
+
+    it('subracts the next amount from the senders output', () => {
+      expect(
+        transaction.outputs.find(o => o.address === wallet.publicKey).amount,
+      ).toEqual(wallet.balance - amount - nextAmount);
+    });
+
+    it('outputs an amount for the next recipient', () => {
+      expect(
+        transaction.outputs.find(o => o.address === nextRecipient).amount,
+      ).toEqual(nextAmount);
+    });
+  });
 });

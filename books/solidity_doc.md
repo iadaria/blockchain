@@ -118,21 +118,21 @@ contract Coin {
     constructor() {
         minter = msg.sender;
     }
-
-    // Sends an amount of newly created coins to an address
-    // Can only be called by the contract creator
+    // Отправляет только что созданные монеты в размере - amount 
+    // на адрес - receiver
+    // Данная функция может вызываться только владельцем/создателем контракта
     function mint(address receiver, uint amount) public {
         require(msg.sender == minter);
         balances[receiver] += amount;
     }
 
-    // Errors allow you to provide information about
-    // why an operation failed. They are returned
-    // to the caller of the function.
+    // Error позволяет отображать информацию о том
+    // почему операция закончилась с ошибкой
+    // Ошибки отображаются вызывающему функцию.
     error InsufficientBalance(uint requested, uint available);
 
-    // Sends an amount of existing coins
-    // from any caller to an address
+    // Отправляем имеющиеся монеты в количестве - amount
+    // Отправителем может быть любой на любой адрес
     function send(address receiver, uint amount) public {
         if (amount > balances[msg.sender])
             revert InsufficientBalance({
@@ -146,9 +146,46 @@ contract Coin {
     }
 }
 ```
+[Посмотреть данные контракт в Redmix](https://remix.ethereum.org/?language=solidity&version=0.8.10&code=Ly8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0zLjAKcHJhZ21hIHNvbGlkaXR5IF4wLjguNDsKCmNvbnRyYWN0IENvaW4gewogICAgLy8gVGhlIGtleXdvcmQgInB1YmxpYyIgbWFrZXMgdmFyaWFibGVzCiAgICAvLyBhY2Nlc3NpYmxlIGZyb20gb3RoZXIgY29udHJhY3RzCiAgICBhZGRyZXNzIHB1YmxpYyBtaW50ZXI7CiAgICBtYXBwaW5nIChhZGRyZXNzID0+IHVpbnQpIHB1YmxpYyBiYWxhbmNlczsKCiAgICAvLyBFdmVudHMgYWxsb3cgY2xpZW50cyB0byByZWFjdCB0byBzcGVjaWZpYwogICAgLy8gY29udHJhY3QgY2hhbmdlcyB5b3UgZGVjbGFyZQogICAgZXZlbnQgU2VudChhZGRyZXNzIGZyb20sIGFkZHJlc3MgdG8sIHVpbnQgYW1vdW50KTsKCiAgICAvLyBDb25zdHJ1Y3RvciBjb2RlIGlzIG9ubHkgcnVuIHdoZW4gdGhlIGNvbnRyYWN0CiAgICAvLyBpcyBjcmVhdGVkCiAgICBjb25zdHJ1Y3RvcigpIHsKICAgICAgICBtaW50ZXIgPSBtc2cuc2VuZGVyOwogICAgfQoKICAgIC8vIFNlbmRzIGFuIGFtb3VudCBvZiBuZXdseSBjcmVhdGVkIGNvaW5zIHRvIGFuIGFkZHJlc3MKICAgIC8vIENhbiBvbmx5IGJlIGNhbGxlZCBieSB0aGUgY29udHJhY3QgY3JlYXRvcgogICAgZnVuY3Rpb24gbWludChhZGRyZXNzIHJlY2VpdmVyLCB1aW50IGFtb3VudCkgcHVibGljIHsKICAgICAgICByZXF1aXJlKG1zZy5zZW5kZXIgPT0gbWludGVyKTsKICAgICAgICBiYWxhbmNlc1tyZWNlaXZlcl0gKz0gYW1vdW50OwogICAgfQoKICAgIC8vIEVycm9ycyBhbGxvdyB5b3UgdG8gcHJvdmlkZSBpbmZvcm1hdGlvbiBhYm91dAogICAgLy8gd2h5IGFuIG9wZXJhdGlvbiBmYWlsZWQuIFRoZXkgYXJlIHJldHVybmVkCiAgICAvLyB0byB0aGUgY2FsbGVyIG9mIHRoZSBmdW5jdGlvbi4KICAgIGVycm9yIEluc3VmZmljaWVudEJhbGFuY2UodWludCByZXF1ZXN0ZWQsIHVpbnQgYXZhaWxhYmxlKTsKCiAgICAvLyBTZW5kcyBhbiBhbW91bnQgb2YgZXhpc3RpbmcgY29pbnMKICAgIC8vIGZyb20gYW55IGNhbGxlciB0byBhbiBhZGRyZXNzCiAgICBmdW5jdGlvbiBzZW5kKGFkZHJlc3MgcmVjZWl2ZXIsIHVpbnQgYW1vdW50KSBwdWJsaWMgewogICAgICAgIGlmIChhbW91bnQgPiBiYWxhbmNlc1ttc2cuc2VuZGVyXSkKICAgICAgICAgICAgcmV2ZXJ0IEluc3VmZmljaWVudEJhbGFuY2UoewogICAgICAgICAgICAgICAgcmVxdWVzdGVkOiBhbW91bnQsCiAgICAgICAgICAgICAgICBhdmFpbGFibGU6IGJhbGFuY2VzW21zZy5zZW5kZXJdCiAgICAgICAgICAgIH0pOwoKICAgICAgICBiYWxhbmNlc1ttc2cuc2VuZGVyXSAtPSBhbW91bnQ7CiAgICAgICAgYmFsYW5jZXNbcmVjZWl2ZXJdICs9IGFtb3VudDsKICAgICAgICBlbWl0IFNlbnQobXNnLnNlbmRlciwgcmVjZWl2ZXIsIGFtb3VudCk7CiAgICB9Cn0=)
 
+На примере данного контракта, мы можем ознакомиться с новыми понятиями, давайте рассмотрим их по
+по порядку \
 
+#### _public_
 
+Строка `address public minter;` объявляет переменную состояния с типом **address**. Тип
+[***address***](https://docs.soliditylang.org/en/v0.8.10/types.html#address) - это 160-битовое значение, которое не допускает никаких арифметических операций. Этот тип
+переменной подходит для хранения адресов контрактов или хэша открытого ключа [внешнего аккаунта](https://docs.soliditylang.org/en/v0.8.10/introduction-to-smart-contracts.html#accounts).
+Ключевое слово ```public``` автоматически создает функцию, которая позволяет получить досутп к текущему
+значению переменной состояния публично - извне контракта. Без этого ключевого слова, другие контракты
+не смогут получить доступ к переменной. Созданный компилятором код функции, эквивалентен следующему
+(пока не обращайте внимания на ключевые слова ```external``` и ```view```)
+```solidity
+function minter() external view returns (address) { return minter; }
+```
+Т/е вы бы могли самостоятельно создать такую функцию, но в таком случае у вас была бы функция и переменная 
+состояния с тем же именем. Не нужно этого делать, компилятор сделает этого за нас.
 
+#### _mapping_
 
+Следующая строка нашего кода - ```mapping (address => uint) public balances;```, также создает переменную
+состояния, но это более сложный тип данных. Тип 
+[mapping](https://docs.soliditylang.org/en/v0.8.10/types.html#mapping-types) используется для работы с
+адресами в формате
+[беззнакового целого числа](https://docs.soliditylang.org/en/v0.8.10/types.html#integers).
+ ***Mapings*** помжно представить в виде [хэш-таблицы](https://en.wikipedia.org/wiki/Hash_table), которая
+инициализируется таким образом, что каждый возможный ключ добавляется с начала и сопоставляется
+со значением, байтовое представление которого(значения) инициированно нулями. 
+Однако невозможно получить ни список
+всех ключей переменной типа ***mapping***, ни список всех его значений. Записывайте отдельно то, что вы
+добавили в ***mapping***, или используйти этот тип в контексте, где в получении значений ***mapping** нет
+необходимости. А лучше используйте более подходящий вам тип данных, например список.
 
+Для переменной типа ***mapping***, get-функция, созданная с помощью ключевого слова ```public``` более
+сложная. Она выглядить следующим образом:
+```solidity
+function balances(address _account) external view returns (uint) {
+    return balances[_account];
+}
+```
+Вы можете с помощью этой функции запросить баланс для одного аккаунта.

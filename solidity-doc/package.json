@@ -1,0 +1,12 @@
+{
+  "name": "solidity-doc",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "compile": "solcjs --abi --bin -p -o ./introduction/contracts/artifacts ./Introduction/contracts/Coin.sol",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC"
+}

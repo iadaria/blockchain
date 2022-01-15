@@ -1,0 +1,2 @@
+- ganache-cli know about new ganache@rc
+- reade truffle docs

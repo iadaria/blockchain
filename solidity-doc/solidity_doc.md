@@ -103,32 +103,27 @@ FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF(64 позици
 pragma solidity ^0.8.4;
 
 contract Coin {
-    // Ключевое слово "public" делает переменные
-    // доступными для других контрактов
+    // Ключевое слово "public" делает переменные доступными для других контрактов
     address public minter;
     mapping (address => uint) public balances;
 
-    // События позволяют клиентам реагировать на
-    // определенные изменения, которые вы объявляете
+    // События позволяют клиентам реагировать на определенные изменения, которые вы объявляете
     event Sent(address from, address to, uint amount);
 
 
-    // Код в конструкторе запускается только 
-    // только один раз - при создании контракта
+    // Код в конструкторе запускается только только один раз - при создании контракта
     constructor() {
         minter = msg.sender;
     }
-    // Отправляет только что созданные монеты в размере - amount 
-    // на адрес - receiver
+    // Отправляет только что созданные монеты в размере - amount на адрес - receiver
     // Данная функция может вызываться только владельцем/создателем контракта
     function mint(address receiver, uint amount) public {
-        require(msg.sender == minter);
+        require(msg.sender == minter, "You are not the minter");
         balances[receiver] += amount;
     }
 
-    // Error позволяет отображать информацию о том
-    // почему операция закончилась с ошибкой
-    // Ошибки отображаются вызывающему функцию.
+    // Errors позволяют отображать информацию о том, почему операция закончилась с ошибкой
+    // Ошибки возвращатеся пользователю, который вызывал функцию.
     error InsufficientBalance(uint requested, uint available);
 
     // Отправляем имеющиеся монеты в количестве - amount
@@ -145,13 +140,14 @@ contract Coin {
         emit Sent(msg.sender, receiver, amount);
     }
 }
+
 ```
 [Посмотреть данные контракт в Redmix](https://remix.ethereum.org/?language=solidity&version=0.8.10&code=Ly8gU1BEWC1MaWNlbnNlLUlkZW50aWZpZXI6IEdQTC0zLjAKcHJhZ21hIHNvbGlkaXR5IF4wLjguNDsKCmNvbnRyYWN0IENvaW4gewogICAgLy8gVGhlIGtleXdvcmQgInB1YmxpYyIgbWFrZXMgdmFyaWFibGVzCiAgICAvLyBhY2Nlc3NpYmxlIGZyb20gb3RoZXIgY29udHJhY3RzCiAgICBhZGRyZXNzIHB1YmxpYyBtaW50ZXI7CiAgICBtYXBwaW5nIChhZGRyZXNzID0+IHVpbnQpIHB1YmxpYyBiYWxhbmNlczsKCiAgICAvLyBFdmVudHMgYWxsb3cgY2xpZW50cyB0byByZWFjdCB0byBzcGVjaWZpYwogICAgLy8gY29udHJhY3QgY2hhbmdlcyB5b3UgZGVjbGFyZQogICAgZXZlbnQgU2VudChhZGRyZXNzIGZyb20sIGFkZHJlc3MgdG8sIHVpbnQgYW1vdW50KTsKCiAgICAvLyBDb25zdHJ1Y3RvciBjb2RlIGlzIG9ubHkgcnVuIHdoZW4gdGhlIGNvbnRyYWN0CiAgICAvLyBpcyBjcmVhdGVkCiAgICBjb25zdHJ1Y3RvcigpIHsKICAgICAgICBtaW50ZXIgPSBtc2cuc2VuZGVyOwogICAgfQoKICAgIC8vIFNlbmRzIGFuIGFtb3VudCBvZiBuZXdseSBjcmVhdGVkIGNvaW5zIHRvIGFuIGFkZHJlc3MKICAgIC8vIENhbiBvbmx5IGJlIGNhbGxlZCBieSB0aGUgY29udHJhY3QgY3JlYXRvcgogICAgZnVuY3Rpb24gbWludChhZGRyZXNzIHJlY2VpdmVyLCB1aW50IGFtb3VudCkgcHVibGljIHsKICAgICAgICByZXF1aXJlKG1zZy5zZW5kZXIgPT0gbWludGVyKTsKICAgICAgICBiYWxhbmNlc1tyZWNlaXZlcl0gKz0gYW1vdW50OwogICAgfQoKICAgIC8vIEVycm9ycyBhbGxvdyB5b3UgdG8gcHJvdmlkZSBpbmZvcm1hdGlvbiBhYm91dAogICAgLy8gd2h5IGFuIG9wZXJhdGlvbiBmYWlsZWQuIFRoZXkgYXJlIHJldHVybmVkCiAgICAvLyB0byB0aGUgY2FsbGVyIG9mIHRoZSBmdW5jdGlvbi4KICAgIGVycm9yIEluc3VmZmljaWVudEJhbGFuY2UodWludCByZXF1ZXN0ZWQsIHVpbnQgYXZhaWxhYmxlKTsKCiAgICAvLyBTZW5kcyBhbiBhbW91bnQgb2YgZXhpc3RpbmcgY29pbnMKICAgIC8vIGZyb20gYW55IGNhbGxlciB0byBhbiBhZGRyZXNzCiAgICBmdW5jdGlvbiBzZW5kKGFkZHJlc3MgcmVjZWl2ZXIsIHVpbnQgYW1vdW50KSBwdWJsaWMgewogICAgICAgIGlmIChhbW91bnQgPiBiYWxhbmNlc1ttc2cuc2VuZGVyXSkKICAgICAgICAgICAgcmV2ZXJ0IEluc3VmZmljaWVudEJhbGFuY2UoewogICAgICAgICAgICAgICAgcmVxdWVzdGVkOiBhbW91bnQsCiAgICAgICAgICAgICAgICBhdmFpbGFibGU6IGJhbGFuY2VzW21zZy5zZW5kZXJdCiAgICAgICAgICAgIH0pOwoKICAgICAgICBiYWxhbmNlc1ttc2cuc2VuZGVyXSAtPSBhbW91bnQ7CiAgICAgICAgYmFsYW5jZXNbcmVjZWl2ZXJdICs9IGFtb3VudDsKICAgICAgICBlbWl0IFNlbnQobXNnLnNlbmRlciwgcmVjZWl2ZXIsIGFtb3VudCk7CiAgICB9Cn0=)
 
 На примере данного контракта, мы можем ознакомиться с новыми понятиями, давайте рассмотрим их по
 по порядку \
 
-#### _public_
+### _public_
 
 Строка `address public minter;` объявляет переменную состояния с типом **address**. Тип
 [***address***](https://docs.soliditylang.org/en/v0.8.10/types.html#address) - это 160-битовое значение, которое не допускает никаких арифметических операций. Этот тип
@@ -166,9 +162,9 @@ function minter() external view returns (address) { return minter; }
 Т/е вы бы могли самостоятельно создать такую функцию, но в таком случае у вас была бы функция и переменная 
 состояния с тем же именем. Не нужно этого делать, компилятор сделает этого за нас.
 
-#### _mapping_
+### _mapping_
 
-Следующая строка нашего кода - ```mapping (address => uint) public balances;```, также создает переменную
+Следующая строка нашего кода - `mapping (address => uint) public balances;`, также создает переменную
 состояния, но это более сложный тип данных. Тип 
 [mapping](https://docs.soliditylang.org/en/v0.8.10/types.html#mapping-types) используется для работы с
 адресами в формате
@@ -188,4 +184,25 @@ function balances(address _account) external view returns (uint) {
     return balances[_account];
 }
 ```
-Вы можете с помощью этой функции запросить баланс для одного аккаунта.
+Вы можете с помощью этой функции запросить баланс для отдельного аккаунта.
+
+Строка кода `event Sent(address from, address to, uint amount);` объявляет одно `событие`, которое будет
+срабатывать(вызывается) на последней строке нашей функции 'send'. Клиентская часть работы с Ethereum, как
+например веб-приложение, может прослушивать эти события из блокчейна без необходимости платить за транзакцию,
+чтобы получить ту же информацию. Как только событие сработало, слушатель получает следующие аргументы:
+`from`, `to`, and `amount`, что позволяет отслеживать транзакцию.
+
+Для прослушивания данного события, можно использовать следующий JavaScript код, в котором используется
+библиотека web3.js для создания контракта `Coin`,
+```javascript
+Coin.Sent().watch({}, '', function(error, result) {
+    if (!error) {
+        console.log("Coin transfer: " + result.args.amount +
+            " coins were sent from " + result.args.from +
+            " to " + result.args.to + ".");
+        console.log("Balances now:\n" +
+            "Sender: " + Coin.balances.call(result.args.from) +
+            "Receiver: " + Coin.balances.call(result.args.to));
+    }
+})
+```

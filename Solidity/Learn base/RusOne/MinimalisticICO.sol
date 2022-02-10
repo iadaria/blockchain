@@ -3,7 +3,7 @@
 pragma solidity >=0.7.0 <0.9.0;
 
 // Объявляем интерфейс
-interface Token {
+interface MyFirstERC20Token {
     function transfer(address _reciever, uint256 _amount) external;
 }
 
@@ -13,10 +13,10 @@ contract MyFirstSafeICo {
     uint public buyPrice;
 
     // Объявляем переменную для хранения токена
-    Token public token; // просто адрес смарт-контракта и вызовем на этом адрес функцию
+    MyFirstERC20Token public token; // просто адрес смарт-контракта и вызовем на этом адрес функцию
 
     // Функция инициализации (принимаем токен)
-    constructor(Token _token) {
+    constructor(MyFirstERC20Token _token) {
         // Присваиваем токен
         token = _token;
 

@@ -1845,3 +1845,74 @@ Wow, OK, there is a lot of big brained concepts here! Let's finally dive into le
 [Chainlink VRF contracts](https://github.com/smartcontractkit/chainlink/blob/develop/contracts/src/v0.6/VRFCoordinator.sol)
 [Chainlink NPM / Github](https://github.com/smartcontractkit/chainlink)
 [Chainlink Doc](https://docs.chain.link/docs/get-a-random-number/)
+
+### Constructor in a constructor
+
+You got it! The VRFConsumerbase contract includes all the code we need to send a request to a Chainlink oracle, including all the event logging code.
+
+Now, as we said, to interact with a Chainlink node, we need to know a few variables.
+
+    The address of the Chainlink token contract. This is needed so our contract can tell if we have enough LINK tokens to pay for the gas.
+    The VRF coordinator contract address. This is needed to verify that the number we get is actually random.
+    The Chainlink node keyhash. This is used identify which Chainlink node we want to work with.
+    The Chainlink node fee. This represents the fee (gas) the Chainlink will charge us, expressed in LINK tokens.
+
+You can find all these variables in the Chainlink VRF Contract addresses documentation page. Once again, the addresses will be different across networks, but for the scope of this lesson we will again be working with the Rinkeby network.
+
+As said in the last lesson, we are going to inherit the functionality of this VRFConsumerbase. But how do we implement a constructor of an inherited contract? And the answer is that we can have a constructor in a constructor.
+
+Let's take a look at this sample code:
+
+```javascript
+import "./Y.sol";
+contract X is Y {
+    constructor() Y() public{
+    }
+}
+```
+To use a constructor of an inherited contract, we just put the constructor declaration as part of our contract's constructor.
+
+We can do the same thing with the VRFConsumerbase contract:
+```javascript
+constructor() VRFConsumerBase(
+    0xb3dCcb4Cf7a26f6cf6B120Cf5A73875B7BBc655B, // VRF Coordinator
+    0x01BE23585060835E02B77ef475b0Cc51aA1e0709  // LINK Token
+) public{
+
+}
+```
+
+[Chainlink Random Number](https://docs.chain.link/docs/intermediates-tutorial/)
+
+Now, let's circle back to how contract.new works. Basically, every time we call this function, Truffle makes it so that a new contract gets deployed.
+
+On one side, this is helpful because it lets us start each test with a clean sheet.
+
+On the other side, if everybody would create countless contracts the blockchain will become bloated. We want you to hang around, but not your old test contracts!
+
+We would want to prevent this from happening, right?
+
+Happily, the solution is pretty straightforward... our contract should selfdestruct once it's no longer needed.
+
+The way this works is as follows:
+
+    first, we would want to add a new function to the CryptoZombies smart contract like so:
+    
+    ```javascript
+    function kill() public onlyOwner {
+       selfdestruct(owner());
+    }
+    ```
+
+        Note: If you want to learn more about selfdestruct(), you can read the Solidity docs here. The most important thing to bear in mind is that selfdestruct is the only way for code at a certain address to be removed from the blockchain. This makes it a pretty important feature!
+
+    next, somewhat similar to the beforeEach() function explained above, we'll make a function called afterEach():
+    ```javascript
+    afterEach(async () => {
+       await contractInstance.kill();
+    });
+    ```
+
+    Lastly, Truffle will make sure this function is called after a test gets executed.
+
+And voila, the smart contract removed itself!

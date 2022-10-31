@@ -1,4 +1,10 @@
 
+### Truffle
+> npm install -g truffle
+> truffle init
+[Truffle Structure](imgs/truffle-structer.png)
+
+
 ### Случайные числа
 
 Отлично! Теперь разберемся с логикой битвы.

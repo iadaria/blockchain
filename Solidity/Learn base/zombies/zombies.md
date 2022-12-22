@@ -1,9 +1,25 @@
 
+### Oracle 
+
 ### Truffle
 > npm install -g truffle
 > truffle init
 [Truffle Structure](imgs/truffle-structer.png)
+> npm install truffle-hdwallet-provider 
+(Its only purpose is to handle the transaction signing)
 
+deploy:
+>truffle migrate --network <name-provider in the truffle.js file>
+
+### Ganache
+It sets up a local Ethereum network
+Migrations.sol keeps track of the changes you are making to your code.
+
+[Configurating truffle](files/truffle.js)
+
+### Loom
+> npm install loom-truffle-provider
+[tutorial](https://loomx.io/developers/en/basic-install-all.html)
 
 ### Случайные числа
 

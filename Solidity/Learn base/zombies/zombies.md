@@ -1938,3 +1938,43 @@ The way this works is as follows:
     Lastly, Truffle will make sure this function is called after a test gets executed.
 
 And voila, the smart contract removed itself!
+
+### Lestening a event
+```javascript
+  //The above snippet just listens for an event called EventName. For more complex use cases, you could also specify a filter like so:
+
+  myContract.events.EventName({ filter: { myParam: 1 }}, async (err, event) => {
+    if (err) {
+      console.error('Error on event', err)
+      return
+    }
+    // Do something
+})
+```
+
+### Working with Numbers in Ethereum and JavaScript
+The Ethereum Virtual Machine doesn't support floating-point numbers, meaning that divisions truncate the decimals. The workaround is to simply multiply the numbers in your front-end by 10**n. The Binance API returns eight decimals numbers and we'll also multiply this by 10**10. Why did we choose 10**10? There's a reason: one ether is 10**18 wei. This way, we'll be sure that no money will be lost.
+
+But there's more to it. The Number type in JavaScript is "double-precision 64-bit binary format IEEE 754 value" which supports only 16 decimals...
+
+Luckily, there's a small library called BN.js that'll help you overcome these issues.
+
+    ☞ For the above reasons, it's recommended that you always use BN.js when dealing with numbers.
+
+Now, the Binance API returns something like 169.87000000.
+
+Let's see how you can convert this to BN.
+
+First, you'll have to get rid of the decimal separator (the dot). Since JavaScript is a dynamically typed language (that's a fancy way of saying that the interpreter analyzes the values of the variables at runtime and, based on the values, it assigns them a type), the easiest way to do this is...
+
+aNumber = aNumber.replace('.', '')
+
+Continuing with this example, converting aNumber to BN would look something like this:
+
+const aNumber = new BN(aNumber, 10)
+
+    Note: The second argument represents the base. Make sure it's always specified.
+
+
+```javascript```
+```solidity```

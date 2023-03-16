@@ -1,5 +1,295 @@
+### TRON
+
+Chapter 1: Introduction
+
+If you have a background in front-end development, you are probably well accustomed to the tools that make a web developer’s life simpler - Webpack, Gulp, or Browserify.
+
+If you have a background in Solidity, and you’ve previously deployed a smart contract to Ethereum, you’re probably familiar with using Truffle or Hardhat.
+
+But what tools can you use to deploy your smart contracts TRON?
+TronBox
+
+TronBox is a smart contract development platform that allows you to test, compile and deploy your smart contracts to the TRON network. TronBox aims to make the life of developers easier and is packed with useful features:
+
+    Easy smart contract compilation
+    Automated ABI generation
+    Integrated smart contract testing
+    Support for multiple networks
+
+TronWeb
+
+TronWeb delivers a seamless development experience influenced by Ethereum's Web3. The TRON team has taken the core ideas of Web3 and expanded upon them to unlock the functionality of the TRON blockchain.
+
+Provided that Node.js has been installed on your computer, we'll want you to install TronBox and TronWeb and make them available globally.
+
+To get started, you'll need to create a new directory and install both Tronbox and TronWeb.
+
+### zkSync
+Accounts
+
+The Ethereum blockchain is made up of accounts, which you can think of like bank accounts. An account has a balance of Ether (the currency used on the Ethereum blockchain), and you can send and receive Ether payments to other accounts, just like your bank account can wire transfer money to other bank accounts.
+
+Each account has an address, which you can think of like a bank account number. It's a unique identifier that points to that account, and it looks like this:
+
+0x0cE446255506E92DF41614C46F1d6df9Cc969183
+
+We're not going to get into the nitty-gritty of addresses, but for now, you only need to understand that an address is owned by a specific user (or a smart contract) and that the users prove their identity using something called private keys.
+Private keys and wallets
+
+Ethereum uses a public/private key pair to digitally sign transactions. Any transaction you send must be signed by the private key associated with your account, and the public key can be derived from the signature and matched against your account to ensure no one can forge a transaction from your account.
+
+Cryptography is complicated, so unless you're a cryptographer you should use battle-tested and well-reviewed cryptographic libraries instead of writing your own.
+
+And because this your lucky day, you don't have to. Both zkSync and ethers provide a class called Wallet that manages users' key pairs and signs blockchain transactions.
+
+We'll be covering how you can create an Ethereum wallet a bit later down the road. In this lesson, we'll walk you through how you can instantiate a zkSync wallet.
+Instantiate a zkSync wallet
+
+Every zkSync wallet has an Ethereum address associated with it, and the user that owns an Ethereum account owns the corresponding zkSync account.
+
+The zksync.Wallet wallet class wraps ethers.Signer and zksync.Signer, allowing you to use it for transferring assets between chains (which requires you to sign transactions on Ethereum) and also for transferring assets between zkSync accounts (which requires you to sign transactions on zkSync). Sweet!
+
+To instantiate a zkSync wallet, you must call the zksync.Wallet.fromEthSigner function passing it the following parameters:
+
+    An instance of the ethers.Wallet class (we're going to instantiate this later in this lesson).
+    Your zkSync provider
+
+Deposit assets to zkSync
+
+In this chapter, you're going to learn about the two types of operations a user can perform on zkSync:
+
+    Priority operations. These are actions users initiate on the Ethereum network. Can you think of an example? Yup, deposits are priority operations.👏🏻👏🏻👏🏻
+
+    Transactions. These are actions users initiate on zkSync. An example of a transaction is when Alice makes a payment on zkSync.
+
+    Note the following about zkSync transactions:
+
+        When you submit a transaction to zkSync, it's instantly confirmed by the protocol. That's nice, but you should know that an instant confirmation is just a promise the operators make that they'll add the transaction to the next block. If you trust the operators then you don't need to wait for the transaction to be finalized.
+
+        A zkSync transaction is final after the SNARK proof is accepted by the Ethereum smart contract. This takes around 10 minutes.
+
+In this chapter, we'll look into how you can deposit assets to zkSync.
+Deposit assets to zkSync
+
+Depositing assets to zkSync is as simple as calling the depositToSyncFromEthereum as follows:
+
+```javascript
+const deposit = await zkSyncWallet.depositToSyncFromEthereum({
+    depositTo: recipient,
+    token: token,
+    amount: amountInWei
+})
+```
+
+The parameters of this function are self-explanatory, so we won't spend time explaining them.
+
+But what happens after you call this function?
+
+First, the transaction gets mined on the Ethereum network. At this stage, the transaction is not yet reflected on zkSync. However, if you don't want your users to stare at a blank screen for too long and you trust this is secure enough, you can use the awaitEthereumTxCommit function to await for the deposit transaction to be mined:
+
+await deposit.awaitEthereumTxCommit()
+
+Second, the transaction is committed to zkSync. When this happens, your balance gets updated accordingly. To check when that happens, you can use the awaitReceipt function.
+
+await deposit.awaitReceipt()
+
+Lastly, once a specific number of blocks get confirmed on Ethereum, the transaction is considered finalized or verified. You can check this by calling the awaitVerifyReceipt function.
+
+await deposit.awaitVerifyReceipt()
+
+    Note: You can only verify a single condition, not all. In this lesson, we'll use the deposit.awaitReceipt function. For our purposes, it's a good enough bargain between security and user experience.
+
+Transfer fees
+
+On zkSync, operations are cheap but they're not free. In this chapter, we're going to continue by teaching you how you can calculate the fee associated with each transaction.
+
+As the protocol performs the computation and stores the state off-chain, the fees users must pay are comprised of two separated components:
+
+    off-chain fee, representing the cost of computation and storage. This component is invariable
+    on-chain fee, representing the cost of verifying the SNARK on Ethereum. This cost is amortized across all transactions in a block, and it's variable because it depends on the price of gas.
+
+Here's an example of computing the fee for a specific transaction:
+
+const feeInWei = await zkSyncProvider.getTransactionFee(transactionType, address, token)
+
+In this example, the getTransactionFee function takes three parameters:
+
+    transactionType: specifies whether this is a "Withdraw" or "Transfer"
+    address: represents the address of the recipient
+    token: specifies the type of token you want to transfer (e.g. "ETH")
+
+The getTransactionFee returns a promise which resolves to an object with the following structure:
+
+````javascript
+export interface Fee {
+    // Operation type (amount of chunks in operation differs and impacts the total fee).
+    feeType: "Withdraw" | "Transfer" | "TransferToNew",
+    // Amount of gas used by transaction
+    gasTxAmount: utils.BigNumber,
+    // Gas price (in wei)
+    gasPriceWei: utils.BigNumber,
+    // Ethereum gas part of fee (in wei)
+    gasFee: utils.BigNumber,
+    // Zero-knowledge proof part of fee (in wei)
+    zkpFee: utils.BigNumber,
+    // Total fee amount (in wei)
+    // This value represents the summarized fee components, and it should be used as a fee
+    // for the actual operation.
+    totalFee: utils.BigNumber,
+}
+````
+
+Now you can do the math and add up all components of the fee, or just use totalFee.
+
+Which one do you choose?
+
+There's no need to answer this question, I probably already know the answer.😉
+
+But, as with transfers, this function expresses all values in wei. If you want to present the fee to your users, you'd better convert it to a human-readable form by:
+
+    converting it from BigNumber to string
+    calling the ethers.utils.formatEther function
+
+Example:
+
+const fee = ethers.utils.formatEther(feeInWei.toString())
+
+That's how easy it is to calculate the fee!
+
+Committed and verified balances
+
+When you transfer assets on zkSync, the operator includes your transaction in a new block and pushes this new block to the zkSync smart contract on Ethereum using a Commit transaction. Then, the SNARK proofs for each transaction in the block is and published on Ethereum using a Verify transaction. Once the Verify transaction is mined on Ethereum, the protocol considers the new state to be final.
+
+Remember that you can receive some tokens and then immediately send those tokens to another user as part of a different transaction? How can that be possible if the protocol waits for the transaction to be mined on Ethereum? The answer is that there are two types of balances on zkSync (committed and verified) and you can use the assets in your committed balance as you wish.
+
+Just to make things clear:
+
+    The committed balance includes all verified and committed transactions
+    The verified balance includes only verified transactions
+
+There are two way in which you can retrieve the balances for an account:
+
+    Using the await wallet.getBalance function as follows:
+
+    const committedETHBalance = await wallet.getBalance('ETH')
+    const verifiedETHBalance = await wallet.getBalance('ETH', 'verified')
+
+    Retrieving the account state which is a JSON object that describes the current state of your account:
+
+    const state = await wallet.getAccountState()
+
+    If you console.log the state variable, the output would look similar to the following example:
+
+```javascript
+    { address: '0xc26f2adeeebbad73f25329ffa12cd3889429b5b6',
+     committed:
+     { balances: { ETH: '100000000000000000' },
+       nonce: 1,
+       pubKeyHash: 'sync:de9de11bdad08aa1cdc2beb5b2b7c7f29c10f079' },
+     depositing: { balances: {} },
+     id: 138,
+     verified:
+     { balances: { ETH: '100000000000000000' },
+       nonce: 1,
+       pubKeyHash: 'sync:de9de11bdad08aa1cdc2beb5b2b7c7f29c10f079' } }
+```
+
+The second method is handier when you want to retrieve balances for multiple assets.
+
+Now, there's something else you should pay attention to before jumping to the part where you write the code: if an account balance is zero, the corresponding JSON field (for example state.committed.balances.ETH) will be undefined. Trying to console.log an undefined variable will break your application, so you should gate the lines of code that display the verified and committed balances with an if/else statement as follows:
+
+if (variable) {
+  doSomething()
+} else {
+  doSomethingElse()
+}
+
+In this example, if variable is defined, then the doSomething function gets called. Otherwise, if variable is undefined, then the doSomethingElse function gets called.
+
+
+### Setting Up New Oracles
+
+Great! Now it's time to write the function that sets up a new oracle by adding its address to the list of known oracles. You might think this is just a matter of calling the oracles.add function with the address of the oracle you want to add as an argument.
+
+Well... think again. Before doing that you'll want to:
+
+    Verify that the caller is the owner of the contract.
+    Make sure that the address is not already an oracle.
+    Notify the front-end that a new oracle has been added by firing an event at the end of the function.
+
+
+### Using Constructor to Set the Owner
+Now that your contract doesn't inherit from Ownable, you must find a way to specify its owner. You'll do this by adding a constructor. This is a special function that's executed only once, when a contract gets deployed.
+
+Here's an example of using a constructor:
+
+````javascript
+contract MyAwesomeContract {
+  constructor (address _owner) public {
+    // Do something
+  }
+````
+
+To make this work, your constructor should take a parameter - the owner's address. So you must revisit the migration file and edit the line that deploys the smart contract to something like the following:
+
+deployer.deploy(EthPriceOracle, '0xb090d88a3e55906de49d76b66bf4fe70b9d6d708')
+
+Next, the code inside the constructor must add the owner (which comes from the function's arguments) to the list of owners:
+
+owners.add(_owner);
+
+
+### Problems of the first decision
+Awesome, you've completed Lesson 2 of our series about building and interacting with an oracle.
+
+Because we're just building an oracle for demo purposes, we've made a bunch of decisions that simplified things a bit. For example, think about what would happen when you bring the oracle down for an upgrade. Yeah, even if it'll take just a few minutes until you bring it back online, all the requests made during this period will be lost. And there's no way to notify the app that a particular request hasn't been processed. A solution for this is to keep track of the last block that got processed, and, every time the oracle starts, it should take it from there.
+
+A production-ready oracle should take care of this, and a few other things, of which, the most important is: how to make the oracle more decentralized. And this is exactly what we'll cover next.
+
+Stay tuned for our next lesson!
+
+
+### Deploy the contract
+> cd oracle && npx truffle migrate --network extdev --reset -all && cd ..
+"scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:oracle": "cd oracle && npx truffle migrate --network extdev --reset -all && cd ..",
+    "deploy:caller": "cd caller && npx truffle migrate --network extdev --reset -all && cd ..",
+    "deploy:all": "npm run deploy:oracle && npm run deploy:caller"
+  },
+
+>node EthPriceOracle.js
+>node Client.js
+
+### Working with Numbers in Ethereum and JavaScript
+Remember we've mentioned that data needs a bit of massaging before it's sent to the oracle contract. Let's look into why.
+
+The Ethereum Virtual Machine doesn't support floating-point numbers, meaning that divisions truncate the decimals. The workaround is to simply multiply the numbers in your front-end by 10**n. The Binance API returns eight decimals numbers and we'll also multiply this by 10**10. Why did we choose 10**10? There's a reason: one ether is 10**18 wei. This way, we'll be sure that no money will be lost.
+
+But there's more to it. The Number type in JavaScript is "double-precision 64-bit binary format IEEE 754 value" which supports only 16 decimals...
+
+Luckily, there's a small library called BN.js that'll help you overcome these issues.
+
+    ☞ For the above reasons, it's recommended that you always use BN.js when dealing with numbers.
+
+Now, the Binance API returns something like 169.87000000.
+
+Let's see how you can convert this to BN.
+
+First, you'll have to get rid of the decimal separator (the dot). Since JavaScript is a dynamically typed language (that's a fancy way of saying that the interpreter analyzes the values of the variables at runtime and, based on the values, it assigns them a type), the easiest way to do this is...
+
+aNumber = aNumber.replace('.', '')
+
+Continuing with this example, converting aNumber to BN would look something like this:
+
+const aNumber = new BN(aNumber, 10)
+
+    Note: The second argument represents the base. Make sure it's always specified.
+
+We've gone ahead and filled in almost all the code that goes to the setLatestEthPrice function. Here's what's left for you to do.
 
 ### Oracle 
+
 
 ### Truffle
 > npm install -g truffle

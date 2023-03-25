@@ -218,5 +218,58 @@ Coin.Sent().watch({}, '', function(error, result) {
 В случае, когда вы используете приведенный в примере контракт для отправки монет на какой-то адрес, вы ничего не увидите при просмотре этого адреса в обозревателе блокчейна, поскольку запись о том, что вы отправили монеты и измененные балансы хранятся только в хранилище данных этого конкретного контракта `Coin`. Используя события, вы можете создать "обозреватель блокчейна", который отслеживает транзакции и балансы вашей новой монеты, но при этом вы должны просматривать адрес контракта `Coin`, а не адреса владельцев монет.
 ---
 
-## Лицензия
-Солидити лицензирован на следующих условиях [GNU General Public License v3.0](LICENSE.txt).
+## Blockchain Basics
+
+## Основы блокчейна
+
+Blockchains as a concept are not too hard to understand for programmers. The reason is that most of the complications (mining, hashing, elliptic-curve cryptography, peer-to-peer networks, etc.) are just there to provide a certain set of features and promises for the platform. Once you accept these features as given, you do not have to worry about the underlying technology - or do you have to know how Amazon’s AWS works internally in order to use it?
+
+Концепция блокчейна не слишком сложна для понимания программистами. Причина в том, что большинство сложных составляющих (майнинг, хэширование, криптография с эллиптическими кривыми, одноранговые сети и т.д.) просто необходимы для обеспечения определенного набора функций и обязательств для платформы. Как только вы принимаете эти функции как данность, вам не нужно беспокоиться о фундаментальной технологии - или вам нужно знать, как работает AWS от Amazon, чтобы использовать его?
+
+### Transactions
+### Транзакции
+
+EN
+A blockchain is a globally shared, transactional database. This means that everyone can read entries in the database just by participating in the network. If you want to change something in the database, you have to create a so-called transaction which has to be accepted by all others. The word transaction implies that the change you want to make (assume you want to change two values at the same time) is either not done at all or completely applied. Furthermore, while your transaction is being applied to the database, no other transaction can alter it.
+RU
+Блокчейн - это глобально общедоступная база данных транзакций. Т.е. каждый участник сети может читать записи этой в базе данных. Если вы хотите внести изменения в базу данных, вы должны создать так называемую транзакцию, которая должна быть принята всеми остальными участниками. Слово транзакция подразумевает, что изменение, которое вы хотите сделать(предположим, вы хотите изменить два значения одновременно), либо не будет сделано совсем, либо будет полностью применено.
+Более того, пока ваша транзакция будет вноситься в базу данных, никакая другая транзакция не может ее изменить.
+
+EN
+As an example, imagine a table that lists the balances of all accounts in an electronic currency. If a transfer from one account to another is requested, the transactional nature of the database ensures that if the amount is subtracted from one account, it is always added to the other account. If due to whatever reason, adding the amount to the target account is not possible, the source account is also not modified.
+RU
+В качестве примера представьте себе таблицу, в которой перечислены остатки на всех счетах в электронной валюте. Если требуется перевести средства с одного счета на другой, транзакционная cущность базы данных гарантирует, что если сумма вычитается из одного счета, она всегда добавляется к другому счету. Если по какой-либо причине добавление суммы на целевой счет невозможно, исходный счет также не изменяется.
+
+EN
+Furthermore, a transaction is always cryptographically signed by the sender (creator). This makes it straightforward to guard access to specific modifications of the database. In the example of the electronic currency, a simple check ensures that only the person holding the keys to the account can transfer money from it.
+RU
+Кроме того, транзакция всегда криптографически подписывается отправителем (создателем). Это позволяет легко защитить возможность определенной модификации базы данных. В приведенном примере с электронной валютой, простая проверка гарантирует, что только человек, владеющий ключами от счета, может перевести с него деньги.
+
+### Blocks
+### Блоки
+
+EN
+One major obstacle to overcome is what (in Bitcoin terms) is called a “double-spend attack”: What happens if two transactions exist in the network that both want to empty an account? Only one of the transactions can be valid, typically the one that is accepted first. The problem is that “first” is not an objective term in a peer-to-peer network.
+RU
+Одним из основных трудносей, которое необходимо преодолеть, является то, что (в терминах Биткоина) называется "атакой двойного расходования". Что происходит, если в сети существуют две транзакции, которые обе хотят использовать один аккаунт? Только одна из этих транзакций может быть действительной, обычно эта та, которая принимается первой. Проблема в том, что "первая" не является объективным понятием в одноранговой сети.
+
+EN
+The abstract answer to this is that you do not have to care. A globally accepted order of the transactions will be selected for you, solving the conflict. The transactions will be bundled into what is called a “block” and then they will be executed and distributed among all participating nodes. If two transactions contradict each other, the one that ends up being second will be rejected and not become part of the block.
+RU
+Простым ответом на данный вопрос будет то, что вас это не должно волновать. Общий порядок подтверждения транзакций будет выбран за вас, разрешая конфликт. Транзакции будут объединены в так называемый "блок" и затем выполнены и распределены между всему участвующими нодами. Если две транзакции протеворечат друг другу, то та которая окажется второй, будет отклонена и не станет частью блока.
+ 
+EN
+These blocks form a linear sequence in time, and that is where the word “blockchain” derives from. Blocks are added to the chain at regular intervals, although these intervals may be subject to change in the future. For the most up-to-date information, it is recommended to monitor the network, for example, on Etherscan.
+RU
+Эти блоки образуют линейную последовательность во времени, и именно отсюда и происходит слово "блокчейн". Блоки добавляются в цепочку через регулярные промежутки времени, хотя эти промежутки могут быть изменены в будущем. Для получения наиболее актуальной информации, рекомендуется следить за сетью, например, с помощью Etherscan.
+
+EN
+As part of the “order selection mechanism” (which is called “mining”) it may happen that blocks are reverted from time to time, but only at the “tip” of the chain. The more blocks are added on top of a particular block, the less likely this block will be reverted. So it might be that your transactions are reverted and even removed from the blockchain, but the longer you wait, the less likely it will be.
+RU
+В рамках "закономерность порядка отбора" (который называется "майнинг")
+
+EN
+Note
+Transactions are not guaranteed to be included in the next block or any specific future block, since it is not up to the submitter of a transaction, but up to the miners to determine in which block the transaction is included.
+If you want to schedule future calls of your contract, you can use a smart contract automation tool or an oracle service.
+RU

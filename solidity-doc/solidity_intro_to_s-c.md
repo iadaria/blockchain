@@ -266,10 +266,63 @@ RU
 EN
 As part of the “order selection mechanism” (which is called “mining”) it may happen that blocks are reverted from time to time, but only at the “tip” of the chain. The more blocks are added on top of a particular block, the less likely this block will be reverted. So it might be that your transactions are reverted and even removed from the blockchain, but the longer you wait, the less likely it will be.
 RU
-В рамках "закономерность порядка отбора" (который называется "майнинг")
+В рамках "механизма отбора порядка"(?) (который называется "майнинг") время от времени может происходить откатывание(отмена) блоков, но только в конце(?) цепочки. Чем больше блоков добавляется поверх определенного блока, тем меньше вероятность того, что этот блок будет не принят. Поэтому может случится так, что ваши транзакции будут отменены и даже удален из блокчейна, но чем дольше вы ждете, тем меньше вероятность что это произойдет.
 
 EN
 Note
 Transactions are not guaranteed to be included in the next block or any specific future block, since it is not up to the submitter of a transaction, but up to the miners to determine in which block the transaction is included.
 If you want to schedule future calls of your contract, you can use a smart contract automation tool or an oracle service.
 RU
+---
+> **_Примечание:_**
+Нет гарантии, что транзакции будут включены в следующий блок или любой конкретный блок в будущем, поскольку не отправитель транзакции, а майнеры определяют, в какой блок будет включена транзакция.
+Если вы хотите запланировать в будущем вызывать функции вашего контракта(?), вы можете использовать инструменты автоматизации смарт-контракта или службу oracle.
+___
+
+EN
+### The Ethereum Virtual Machine
+#### Overview
+RU
+## Виртуальная машина Ethereum
+### Обзор
+
+EN
+The Ethereum Virtual Machine or EVM is the runtime environment for smart contracts in Ethereum. It is not only sandboxed but actually completely isolated, which means that code running inside the EVM has no access to network, filesystem or other processes. Smart contracts even have limited access to other smart contracts.
+Accounts
+\
+RU
+Виртуальная машина Ethereum или EVM - это среда выполнения смарт-контрактов в Ethereum. Это не только "песочница", но и полностью изолированная среда, что означает, что код запускается внутри EVM, не имея доступа к сети, файловой системе или другим процессам. И смарт-контракты имеют ограниченный доступ к другим смарт-контрактам.
+
+EN
+There are two kinds of accounts in Ethereum which share the same address space: External accounts that are controlled by public-private key pairs (i.e. humans) and contract accounts which are controlled by the code stored together with the account.
+\
+RU
+В Ethereum существует два вида аккаунтов, которые разделяют одно и то же адресное пространство: внешние аккаунты, которые управляются парами открытых и закрытых ключей(т.е. людьми) и аккаунты контрактов, которые управляются кодом, хранящимся вместе с аккаунтом.
+
+EN
+The address of an external account is determined from the public key while the address of a contract is determined at the time the contract is created (it is derived from the creator address and the number of transactions sent from that address, the so-called “nonce”).
+\
+RU
+Адрес внешнего аккаунта задается из открытого ключа, в то время как адрес контракта задается в момент его создания (он выводится из адреса создателя контракта и количества транзакций, отправленных с этого адреса, так называемого "nonce")
+___
+Nonce - порядковый номер транзакций, отправленных с данного адреса. При каждой отправке транзакции значение Nonce увеличивается на единицу. Кроме того, Nonce предотвращает повторную атаку: злоумышленник может захотеть исполнить подписанную транзакцию еще раз, однако при валидации Nonce транзакции и текущий Nonce аккаунта будут не совпадать и транзакция будет считаться не валидной.
+___
+
+EN
+Regardless of whether or not the account stores code, the two types are treated equally by the EVM.
+\
+RU
+Независимо от того, хранит ли аккаунт код или нет, эти два типа аккаунтов рассматриваются EVM одинаково.
+
+EN
+Every account has a persistent key-value store mapping 256-bit words to 256-bit words called storage.
+\
+RU
+Каждая учетная запись имеет постоянное хранилище значений ключа, сопоставляющее 256-битные слова с 256-битными словами, называемыми хранилищем.
+
+
+EN
+Furthermore, every account has a balance in Ether (in “Wei” to be exact, 1 ether is 10**18 wei) which can be modified by sending transactions that include Ether.
+\
+RU
+Кроме того, каждый аккаунт имеет баланс в Эфире (точнее, в "вэях", 1 эфир равен 10 ** 18 wei), который может быть изменен путем отправки тразакций, включающих Эфир.

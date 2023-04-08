@@ -440,3 +440,22 @@ For a complete list, please see the list of opcodes as part of the inline assemb
 
 RU
 Полный перечень инструкций можно найти в списке кодов операций в составе документации по встроенному ассемблеру(?).
+
+### Message Calls
+### Вызовы сообщений (!?)
+
+EN
+Contracts can call other contracts or send Ether to non-contract accounts by the means of message calls. Message calls are similar to transactions, in that they have a source, a target, data payload, Ether, gas and return data. In fact, every transaction consists of a top-level message call which in turn can create further message calls.
+
+RU
+Контракты могут вызывать другие контракты или отправлять Эфир на аккаунты не относящиеся к контрактам, посредством вызовов сообщений(?). Вызовы сообщений(?) похожи на транзакции, поскольку они имеют источник, цель, полезную нагрузку, Эфир, газ и возвращаемые данные. Фактически, каждая транзакция состоит из вызова сообщения верхнего уровня, который, в свою очередь, может создавать другие вызовы сообщений(?).
+
+EN
+A contract can decide how much of its remaining **gas** should be sent with the inner message call and how much it wants to retain. If an out-of-gas exception happens in the inner call (or any other exception), this will be signaled by an error value put onto the stack. *In this case, only the gas sent together with the call is used up. In Solidity, the calling contract causes a manual exception by default in such situations, so that exceptions “bubble up” the call stack.*
+
+RU
+Контракт может определить, сколько оставшегося у него газа должно быть отправлено с внутренним вызовом сообщения и сколько он хочет оставить себе. Если во внутреннем вызове произойдет исключение газ-закончился(или любое другое исключение), об этом будет сигнализировать значение ошибки, помещенное в стек. В таком случае, расходуется только тот газ, который был отправлен вместе с вызовом сообещния(?). В Solidity, вызывающий контракт по умолчанию в таких ситуациях вызывает ручное исключение, так что исключение "всплывать" в стеке вызовов.
+
+As already said, the called contract (which can be the same as the caller) will receive a freshly cleared instance of memory and has access to the call payload - which will be provided in a separate area called the **calldata**. After it has finished execution, it can return data which will be stored at a location in the caller’s memory preallocated by the caller. All such calls are fully synchronous.
+
+Calls are **limited** to a depth of 1024, which means that for more complex operations, loops should be preferred over recursive calls. Furthermore, only 63/64th of the gas can be forwarded in a message call, which causes a depth limit of a little less than 1000 in practice.

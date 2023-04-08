@@ -326,3 +326,62 @@ Furthermore, every account has a balance in Ether (in “Wei” to be exact, 1 e
 \
 RU
 Кроме того, каждый аккаунт имеет баланс в Эфире (точнее, в "вэях", 1 эфир равен 10 ** 18 wei), который может быть изменен путем отправки тразакций, включающих Эфир.
+
+### Transactions
+### Транзакции
+
+EN
+A transaction is a message that is sent from one account to another account (which might be the same or empty, see below). It can include binary data (which is called “payload”) and Ether.
+\
+RU
+Транзакция - это информация, которая отправляется с одного аккаунта на другой (аккаунт может быть одним и тем же или пустым, см. ниже). Транзакциия может включать двоичные данные (котоыре называются "полежной нагрузкой") и Эфир.
+
+EN
+If the target account contains code, that code is executed and the payload is provided as input data.
+\
+RU
+Если целевой аккаунт содержит код, то этот код выполняется и `payload` передается в качестве входных данных.
+
+EN
+If the target account is not set (the transaction does not have a recipient or the recipient is set to null), the transaction creates a new contract. As already mentioned, the address of that contract is not the zero address but an address derived from the sender and its number of transactions sent (the “nonce”). The payload of such a contract creation transaction is taken to be EVM bytecode and executed. The output data of this execution is permanently stored as the code of the contract. This means that in order to create a contract, you do not send the actual code of the contract, but in fact code that returns that code when executed.
+\
+RU
+Если целевой аккаунт не указан (у транзакции нет получателя или получателю присовено null), транзакция создает новый контракт. Как уже упоминалось, адресом этого контракта является не нулеовй дарес, а адрес, полученный из адреса отправителя и номера количества отправленных им транзакций ("nonce"). `payload` такой транзакции, создающей контракт, принимается EVM за байткод и исполняется. Выходные данные этого выполнения хранятся постоянно в виде кода контракта. Это означает, что для создания контракта вы отправляете не фактический код контракта, а код, который возвращает этот код при выполнении.
+
+EN
+Note
+
+While a contract is being created, its code is still empty. Because of that, you should not call back into the contract under construction until its constructor has finished executing.
+\
+___
+RU
+#### Примечание
+Пока контракт создается, его код еще пуст. Поэтому не следуюет обращаться к создаваемому контракту до тех пор, пока его конструктор не закончит выполнение.
+___
+
+### Gas
+### Газ
+
+EN
+Upon creation, each transaction is charged with a certain amount of gas that has to be paid for by the originator of the transaction (tx.origin). While the EVM executes the transaction, the gas is gradually depleted according to specific rules. If the gas is used up at any point (i.e. it would be negative), an out-of-gas exception is triggered, which ends execution and reverts all modifications made to the state in the current call frame.
+\
+RU
+При создании, c каждой транзакции взымается плата в виде определенного количества газа, который вносится инициатором транзакции (`tx.origin`). Пока EVM выполняет эту транзакцию, газ расходуется постепенно в соответсвии с определенными правилами. Если в какой-то момент газ израсходован (т.е. стал бы отрицательным), срабатывает исключение `газ-закончился`, которое завершает выполнение транзакции и откатываем все изменения, внесенные в состояние в рамках текущего вызова.
+
+EN
+This mechanism incentivizes economical use of EVM execution time and also compensates EVM executors (i.e. miners / stakers) for their work. Since each block has a maximum amount of gas, it also limits the amount of work needed to validate a block.
+\
+RU
+Этот механизм стимулирует экономное использование ресурсов EVM, а также оплачивает работу исполнителей EVM (т.е. майнеров / стейкеров). Поскольку каждый блок имеет максимальное количество газа, это также ограничивает объем работы, необходимой для валидации блока(?).
+
+EN
+The gas price is a value set by the originator of the transaction, who has to pay gas_price * gas up front to the EVM executor. If some gas is left after execution, it is refunded to the transaction originator. In case of an exception that reverts changes, already used up gas is not refunded.
+\
+RU
+Цена газа - значение, которое устанавливается инициатором транзакции, который должен заплатить вперед `gas_price * gas` исполнителю EVM. Если после выполнения транзакции остается какое-то количество газа, он возвращается инициатору транзакции.
+
+EN
+Since EVM executors can choose to include a transaction or not, transaction senders cannot abuse the system by setting a low gas price.
+\
+RU
+Поскольку исполнители EVM могу выбирать принимать ли транзакцию в блок или нет, отправители транзакций не могут злоупотреблять системой, устанавливая низкую цену на газ.

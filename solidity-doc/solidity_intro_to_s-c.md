@@ -385,3 +385,34 @@ Since EVM executors can choose to include a transaction or not, transaction send
 \
 RU
 Поскольку исполнители EVM могу выбирать принимать ли транзакцию в блок или нет, отправители транзакций не могут злоупотреблять системой, устанавливая низкую цену на газ.
+
+### Storage, Memory and the Stack
+### Хранение, Память и Стек
+
+EN
+The Ethereum Virtual Machine has three areas where it can store data: storage, memory and the stack.
+\
+RU
+Виртуальная машина Ethereum имеет три области для хранения данных: хранилище, память и стек.
+
+EN
+Each account has a data area called storage, which is persistent between function calls and transactions. Storage is a key-value store that maps 256-bit words to 256-bit words. It is not possible to enumerate storage from within a contract, it is comparatively costly to read, and even more to initialise and modify storage. Because of this cost, you should minimize what you store in persistent storage to what the contract needs to run. Store data like derived calculations, caching, and aggregates outside of the contract. A contract can neither read nor write to any storage apart from its own.
+\
+RU
+Каждый аккаунт имеет область данных, называемую **хранилищем**, которая сохраняется между вызовами функций и транзакциями. Хранилище представляет собой хранилище значений ключей, сопостовляющее 256-битные слова с 256-битными словами. Невозможно "перебрать" хранилище внутри контракта, и его стравнительно дорого читать и тем более инициализировать и изменять это хранилище. Из-за такой стоимости, вам следует свести к минимуму хранение данных в постоянном хранилище и использовать в работе контракта только самое необходимое. Храните такие данные, как производные вычисления, кэширование и совокупные элементы/агрегаты вне контракта(?). Контракт не может ни читать, ни записывать ни в какое другое хранилище, кроме своего собственного.
+
+EN
+The second data area is called memory, of which a contract obtains a freshly cleared instance for each message call. Memory is linear and can be addressed at byte level, but reads are limited to a width of 256 bits, while writes can be either 8 bits or 256 bits wide. Memory is expanded by a word (256-bit), when accessing (either reading or writing) a previously untouched memory word (i.e. any offset within a word). At the time of expansion, the cost in gas must be paid. Memory is more costly the larger it grows (it scales quadratically).
+\
+RU
+Вторая область данных называется собственно **памятью**, из которой контракт получает только "очищенный" экземпляр объекта для каждого вызова сообщения. Память является линейной и может адресоваться на уровне байтов, но чтение ограничено шириной в 256 бит, тогда как запись может быть либо 8-битного, либо 256-битного формата. Память расширяется до одного слова (256-бит) при обращении (чтении или записи) к памяти ранее незатронутой, размером со слово (т.е. к любому смещению внутри слова). В момент расширения памяти, необходимо оплатить стоимость газа(?). Чем больше используется памяти, тем она обходится дороже (квадратичный рост).
+
+EN
+The EVM is not a register machine but a stack machine, so all computations are performed on a data area called the stack. It has a maximum size of 1024 elements and contains words of 256 bits. Access to the stack is limited to the top end in the following way: It is possible to copy one of the topmost 16 elements to the top of the stack or swap the topmost element with one of the 16 elements below it. All other operations take the topmost two (or one, or more, depending on the operation) elements from the stack and push the result onto the stack. Of course it is possible to move stack elements to storage or memory in order to get deeper access to the stack, but it is not possible to just access arbitrary elements deeper in the stack without first removing the top of the stack.
+\
+RU
+EVM - это не регистровое, а стековое устройство, поэтому все вычисления выполняются в области данных, называемой **стеком**. Стек имеет максимальный размер - 1024 элемента и содержит слова из 256 бит. Доступ к стеку ограничивается верхней планкой следующим образом: возможно скопировать один из самых верхних 16 элементов в верхнюю часть стека или заменить верхний элемент одним из 16 элементов под ним. Все остальные операции берут верхние два (или один или более, в зависимости от операции) элемента из стека и помещают результат в стек. Конечно, можно перемещать элементы стека в хранилище или в память, дабы получить более глубокий доступ к стеку, но невозможно просто получить доступ к произвольным элементам глубоко в стеке, не удалив сначала верхнюю часть стека.
+
+___
+**Стек** представляет структуру данных, которая позволяет управлять регистрами между вызовами функций, а также управлять памятью в процессе вызова функции. Стек работает по принципу LIFO (last in first out - последний вошел, первый вышел). Это значит, что первым извлекается из стека тот элемент, который был добавлен последним. Стек подобен стопке тарелок - каждую новую тарелку кладут поверх предыдущей и, наоборот, сначала берут самую верхнюю тарелку.
+___

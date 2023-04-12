@@ -448,14 +448,52 @@ EN
 Contracts can call other contracts or send Ether to non-contract accounts by the means of message calls. Message calls are similar to transactions, in that they have a source, a target, data payload, Ether, gas and return data. In fact, every transaction consists of a top-level message call which in turn can create further message calls.
 
 RU
-Контракты могут вызывать другие контракты или отправлять Эфир на аккаунты не относящиеся к контрактам, посредством вызовов сообщений(?). Вызовы сообщений(?) похожи на транзакции, поскольку они имеют источник, цель, полезную нагрузку, Эфир, газ и возвращаемые данные. Фактически, каждая транзакция состоит из вызова сообщения верхнего уровня, который, в свою очередь, может создавать другие вызовы сообщений(?).
+Контракты могут вызывать другие контракты или отправлять Эфир на аккаунты не относящиеся к контрактам, посредством вызовов сообщений(?). Вызовы сообщений(?) похожи на транзакции, поскольку они имеют источник, цель, полезную нагрузку `payload`, Эфир, газ и возвращают данные. Фактически, каждая транзакция состоит из вызова сообщения верхнего уровня, который, в свою очередь, может создавать другие вызовы сообщений(?).
 
 EN
-A contract can decide how much of its remaining **gas** should be sent with the inner message call and how much it wants to retain. If an out-of-gas exception happens in the inner call (or any other exception), this will be signaled by an error value put onto the stack. *In this case, only the gas sent together with the call is used up. In Solidity, the calling contract causes a manual exception by default in such situations, so that exceptions “bubble up” the call stack.*
+A contract can decide how much of its remaining **gas** should be sent with the inner message call and how much it wants to retain. If an out-of-gas exception happens in the inner call (or any other exception), this will be signaled by an error value put onto the stack. In this case, only the gas sent together with the call is used up. In Solidity, the calling contract causes a manual exception by default in such situations, so that exceptions “bubble up” the call stack.
 
 RU
-Контракт может определить, сколько оставшегося у него газа должно быть отправлено с внутренним вызовом сообщения и сколько он хочет оставить себе. Если во внутреннем вызове произойдет исключение газ-закончился(или любое другое исключение), об этом будет сигнализировать значение ошибки, помещенное в стек. В таком случае, расходуется только тот газ, который был отправлен вместе с вызовом сообещния(?). В Solidity, вызывающий контракт по умолчанию в таких ситуациях вызывает ручное исключение, так что исключение "всплывать" в стеке вызовов.
+Контракт может определить, сколько оставшегося у него газа должно быть отправлено с внутренним вызовом сообщения и сколько он хочет оставить себе. Если во внутреннем вызове произойдет исключение газ-закончился(или любое другое исключение), об этом будет сигнализировать значение ошибки, помещенное в стек. В таком случае, расходуется только тот газ, который был отправлен вместе с вызовом сообещния(?). В Solidity, вызывающий контракт по умолчанию в таких ситуациях вызывает ручное исключение, так что исключения "всплывают" в стеке вызовов.(?)
 
+EN
 As already said, the called contract (which can be the same as the caller) will receive a freshly cleared instance of memory and has access to the call payload - which will be provided in a separate area called the **calldata**. After it has finished execution, it can return data which will be stored at a location in the caller’s memory preallocated by the caller. All such calls are fully synchronous.
 
+RU - !? bad
+Как уже было сказано, вызываемый контракт (который может быть таким же, что и вызывающий контракт) получит только что особожденный экземпляр памяти и будет иметь доступ к `payload` вызова - которая будет представлена в отдельной области, называемой **calldata**. После завершения выполнения контракта, он может вернуть данные которые будут сохранены в предварительно выделенной памяти на стороне исполнителя контракта. Все такие вызовы являются синхронными.
+
+
+EN
 Calls are **limited** to a depth of 1024, which means that for more complex operations, loops should be preferred over recursive calls. Furthermore, only 63/64th of the gas can be forwarded in a message call, which causes a depth limit of a little less than 1000 in practice.
+
+RU (?)
+Глубина вызовов ограничена 1024, что означает, что для более сложных операций, следует предпочесть циклы, а не рекурсивные вызовы. Кроме того, только 63/64-ая часть газа может быть отправлена в вызове сообщения, что на практике приводит к ограничению глубины чуть меньше 1000.(?)
+
+### Delegatecall and Libraries
+### Вызыовы делегатов и библиотеки
+
+EN
+There exists a special variant of a message call, named **delegatecall** which is identical to a message call apart from the fact that the code at the target address is executed in the context (i.e. at the address) of the calling contract and `msg.sender` and `msg.value` do not change their values.
+
+RU ? Bad
+Существует отдельный способ вызова сообщения, называемый **delegatecall**, *который идентичен вызову сообщения, за исключением того, что код по целевому адресу(адрес получателя, конечный адрес) выполняется в контексте (т.е. по адресу) вызывающего контракта*, а `msg.sender` и `msg.value` не меняют своих значений.
+
+EN
+This means that a contract can dynamically load code from a different address at runtime. Storage, current address and balance still refer to the calling contract, only the code is taken from the called address.
+
+RU
+
+EN
+This makes it possible to implement the “library” feature in Solidity: Reusable library code that can be applied to a contract’s storage, e.g. in order to implement a complex data structure.
+
+RU
+
+EN
+Logs
+
+RU
+
+EN
+It is possible to store data in a specially indexed data structure that maps all the way up to the block level. This feature called logs is used by Solidity in order to implement events. Contracts cannot access log data after it has been created, but they can be efficiently accessed from outside the blockchain. Since some part of the log data is stored in bloom filters, it is possible to search for this data in an efficient and cryptographically secure way, so network peers that do not download the whole blockchain (so-called “light clients”) can still find these logs.
+
+RU

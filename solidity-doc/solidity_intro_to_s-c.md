@@ -558,26 +558,16 @@ ___
 ### Precompiled Contracts
 ### Предварительно скомпилированные контракты
 
-<style>
-r { color: Red }
-o { color: Orange }
-g { color: Green }
-b { color: #00008B }
-c { color: #6495ED }
-b { color: #cd5c5c }
-</style>
-
+<code style="color : gold">HIHOIHOIH</code>
 
 EN
 There is a small set of contract addresses that are special: The address range between `1` and (including) `8` contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
 
 RU
-Сущевстует небольшой набор адресов контрактов, которые имеют специальное назначение: Диапазон адресов между <g>`1`</g> и <g>`8`</g>(включительно) содержит "предкомпилированные контракты", которые могут быть вызваны как любой другой контракт, но их поведение (и расход газа) не определяется кодом EVM, хранящимся по этому адресу (они не содержать кода), а реализуется в самой среде выполнения EVM.
+Сущевстует небольшой набор адресов контрактов, которые имеют специальное назначение: Диапазон адресов между `1` и `8`(включительно) содержит "предкомпилированные контракты", которые могут быть вызваны как любой другой контракт, но их поведение (и расход газа) не определяется кодом EVM, хранящимся по этому адресу (они не содержать кода), а реализуется в самой среде выполнения EVM.
 
 EN
-Different EVM-compatible chains might use a different set of precompiled contracts. It might also be possible that new precompiled contracts are added to the Ethereum main chain in the future, but you can reasonably expect them to always be in the range between `1` and <b>`0xffff`</b> (inclusive).
+Different EVM-compatible chains might use a different set of precompiled contracts. It might also be possible that new precompiled contracts are added to the Ethereum main chain in the future, but you can reasonably expect them to always be in the range between `1` and `0xffff` (inclusive).
 
 RU
-Различные EVM-совместимые цепочки могут использовать разный набор предварительно скомпилированных контрактов. Также возможно, что в будущем в гавную цепочку Ethereum будут добавлены еще новые предваретльно скомпилированные контракты, но вы можете обоснованно ожидать, что они всегда буду находиться в диапазоне от <b>`1`</b> до <b>`0xffff`</b> (включительно).
-
-https://www.w3schools.com/cssref/css_colors.php
+Различные EVM-совместимые цепочки могут использовать разный набор предварительно скомпилированных контрактов. Также возможно, что в будущем в гавную цепочку Ethereum будут добавлены еще новые предваретльно скомпилированные контракты, но вы можете обоснованно ожидать, что они всегда буду находиться в диапазоне от `1` до `0xffff` (включительно).

@@ -558,6 +558,16 @@ ___
 ### Precompiled Contracts
 ### Предварительно скомпилированные контракты
 
+<style>
+r { color: Red }
+o { color: Orange }
+g { color: Green }
+b { color: #00008B }
+c { color: #6495ED }
+b { color: #cd5c5c }
+</style>
+
+
 EN
 There is a small set of contract addresses that are special: The address range between `1` and (including) `8` contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
 
@@ -569,15 +579,5 @@ Different EVM-compatible chains might use a different set of precompiled contrac
 
 RU
 Различные EVM-совместимые цепочки могут использовать разный набор предварительно скомпилированных контрактов. Также возможно, что в будущем в гавную цепочку Ethereum будут добавлены еще новые предваретльно скомпилированные контракты, но вы можете обоснованно ожидать, что они всегда буду находиться в диапазоне от <b>`1`</b> до <b>`0xffff`</b> (включительно).
-
-
-<style>
-r { color: Red }
-o { color: Orange }
-g { color: Green }
-b { color: #00008B }
-c { color: #6495ED }
-b { color: #cd5c5c }
-</style>
 
 https://www.w3schools.com/cssref/css_colors.php

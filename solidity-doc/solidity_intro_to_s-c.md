@@ -482,18 +482,82 @@ EN
 This means that a contract can dynamically load code from a different address at runtime. Storage, current address and balance still refer to the calling contract, only the code is taken from the called address.
 
 RU
+Это означает, что контракт может динамически загрузить код с другого адреса во время выполнения. Хранилище, текущий адрес и баланс по-прежнему ссылаются на вызывающий контракт, только код будет браться из взятого вызываемого адреса.
 
 EN
 This makes it possible to implement the “library” feature in Solidity: Reusable library code that can be applied to a contract’s storage, e.g. in order to implement a complex data structure.
 
 RU
+Это позволяет реализовать в Solidity функцию "библиотеки": т.е. повторно использовать код библиотеки, который может быть применен к хранилищу контракта, например, для реализации сложной структуры данных.
 
 EN
-Logs
-
-RU
+### Logs
+### Логи
 
 EN
 It is possible to store data in a specially indexed data structure that maps all the way up to the block level. This feature called logs is used by Solidity in order to implement events. Contracts cannot access log data after it has been created, but they can be efficiently accessed from outside the blockchain. Since some part of the log data is stored in bloom filters, it is possible to search for this data in an efficient and cryptographically secure way, so network peers that do not download the whole blockchain (so-called “light clients”) can still find these logs.
 
 RU
+Существует возможность хранить данные в специальной индексированной структуре данных, которая отображается вплоть до уровня блока. Эта возможность, называемая журналами, используется Solidity для реализации событий. Контракты не могут получить доступ к журнальным данным после их создания, но к ним можно получить эффективный доступ извне блокчейна. Поскольку часть данных журнала хранится в фильтрах bloom, поиск этих данных можно осуществлять эффективным и криптографически безопасным способом, поэтому сетевые коллеги, которые не загружают весь блокчейн (так называемые "легкие клиенты"), все равно могут найти эти журналы.
+
+### Create
+### Создавать
+
+EN
+Contracts can even create other contracts using a special opcode (i.e. they do not simply call the zero address as a transaction would). The only difference between these create calls and normal message calls is that the payload data is executed and the result stored as code and the caller / creator receives the address of the new contract on the stack.
+
+RU +
+Контракты могут даже создавать другие контракты, используя специальный опкод (т.е. они не просто вызывают нулевой адрес, как это сделала бы транзакция). Единственная разница между этими вызовами создания и обычными вызовами сообщений заключается в том, что `payload` данные выполняются и результат сохраняется в виде кода, а вызывающий/создающий контракт получает адрес нового контракта в стеке.
+
+### Deactivate and Self-destruct
+### Деактивация и самоуничтожение
+
+EN
+The only way to remove code from the blockchain is when a contract at that address performs the `selfdestruct` operation. The remaining Ether stored at that address is sent to a designated target and then the storage and code is removed from the state. Removing the contract in theory sounds like a good idea, but it is potentially dangerous, as if someone sends Ether to removed contracts, the Ether is forever lost.
+
+RU ?
+Единственный способ удалить код из блокчейна - это когда контракт по этому адресу выполняет операцию `selfdestruct`. Оставшийся Эфир, хранящийся по этому адресу, отправялется на предусмотренный разработчиком адрес, а затем само хранилище и код удаляются из состояни(?). Теоретически вроде бы удаление контракта хорошая идея, но небезопасная, так как если кто-то отправит Эфир на удаленные контракт, этот Эфир будет навсегда потерян.
+
+EN
+Warning
+
+From version 0.8.18 and up, the use of `selfdestruct` in both Solidity and Yul will trigger a deprecation warning, since the `SELFDESTRUCT` opcode will eventually undergo breaking changes in behaviour as stated in EIP-6049.
+
+RU
+> **Предупреждение**
+___
+Начиная с версии 0.8.18 и выше, использование `selfdestruct` как в Solidity так и в Yul вызовет предупреждение, что операция устарела, поскольку код операции `SELFDESTRCUT` со временем претерпел серьезные изменения в поведении, как указано в EIP-6049.
+___
+
+EN
+Warning
+
+Even if a contract is removed by `selfdestruct`, it is still part of the history of the blockchain and probably retained by most Ethereum nodes. So using `selfdestruct` is not the same as deleting data from a hard disk.
+
+RU
+> **Предупреждение**
+___
+Если даже контракт удаляетя инструкцией `selfdestruct`, он все равно остается частью истории блокчейна и, вероятно, сохраняется на большенстве узлов Ethereum. Поэтому использование `selfdestruct` - это не то же самое, что удаление данных с жесткого диска.
+___
+
+EN
+Note
+
+Even if a contract’s code does not contain a call to `selfdestruct`, it can still perform that operation using `delegatecall` or `callcode`.
+
+If you want to deactivate your contracts, you should instead **disable** them by changing some internal state which causes all functions to revert. This makes it impossible to use the contract, as it returns Ether immediately.
+
+RU
+> **Примечание**
+___
+Даже если код контракта не содержит вызова `selfdestruct`,  он все равно может выполнить эту операцию с помощью `delegatecall` или `callcode`.
+
+Если Вы хотите деактивировать свои контракты, то вместо этого вам следует **отключения** их путем изменения некоторого внутреннего состояния, которое вызывает возврат всех функций. Это делает невозможным использование контракта, так как он немедленно возвращает Эфир.
+___
+
+
+### Precompiled Contracts
+
+There is a small set of contract addresses that are special: The address range between 1 and (including) 8 contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
+
+Different EVM-compatible chains might use a different set of precompiled contracts. It might also be possible that new precompiled contracts are added to the Ethereum main chain in the future, but you can reasonably expect them to always be in the range between 1 and 0xffff (inclusive).

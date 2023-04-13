@@ -558,8 +558,6 @@ ___
 ### Precompiled Contracts
 ### Предварительно скомпилированные контракты
 
-<code style="color : gold">HIHOIHOIH</code>
-
 EN
 There is a small set of contract addresses that are special: The address range between `1` and (including) `8` contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
 
@@ -571,3 +569,16 @@ Different EVM-compatible chains might use a different set of precompiled contrac
 
 RU
 Различные EVM-совместимые цепочки могут использовать разный набор предварительно скомпилированных контрактов. Также возможно, что в будущем в гавную цепочку Ethereum будут добавлены еще новые предваретльно скомпилированные контракты, но вы можете обоснованно ожидать, что они всегда буду находиться в диапазоне от `1` до `0xffff` (включительно).
+
+
+${\color{green}GREEN}$
+${\color{red}Red}$
+${\color{lightgreen}Light Green}$
+${\color{blue}Blue}$
+${\color{cyan}Cyan}$
+${\color{#ffffff}White}$
+${\color{lightblue}Light Blue}$
+${\color{black}Black}$
+${\color{white}White}$
+${\color{yellow}Yellow}$
+${\color{orange}Orange}$

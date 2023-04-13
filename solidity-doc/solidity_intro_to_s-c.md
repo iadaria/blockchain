@@ -524,7 +524,7 @@ Warning
 From version 0.8.18 and up, the use of `selfdestruct` in both Solidity and Yul will trigger a deprecation warning, since the `SELFDESTRUCT` opcode will eventually undergo breaking changes in behaviour as stated in EIP-6049.
 
 RU
-> **Предупреждение**
+> <o>⚠️ Предупреждение</o>
 ___
 Начиная с версии 0.8.18 и выше, использование `selfdestruct` как в Solidity так и в Yul вызовет предупреждение, что операция устарела, поскольку код операции `SELFDESTRCUT` со временем претерпел серьезные изменения в поведении, как указано в EIP-6049.
 ___
@@ -535,7 +535,7 @@ Warning
 Even if a contract is removed by `selfdestruct`, it is still part of the history of the blockchain and probably retained by most Ethereum nodes. So using `selfdestruct` is not the same as deleting data from a hard disk.
 
 RU
-> **Предупреждение**
+> <o>⚠️ Предупреждение</o>
 ___
 Если даже контракт удаляетя инструкцией `selfdestruct`, он все равно остается частью истории блокчейна и, вероятно, сохраняется на большенстве узлов Ethereum. Поэтому использование `selfdestruct` - это не то же самое, что удаление данных с жесткого диска.
 ___
@@ -548,16 +548,36 @@ Even if a contract’s code does not contain a call to `selfdestruct`, it can st
 If you want to deactivate your contracts, you should instead **disable** them by changing some internal state which causes all functions to revert. This makes it impossible to use the contract, as it returns Ether immediately.
 
 RU
-> **Примечание**
+> <c>ℹ️ Примечание</c>
 ___
 Даже если код контракта не содержит вызова `selfdestruct`,  он все равно может выполнить эту операцию с помощью `delegatecall` или `callcode`.
 
 Если Вы хотите деактивировать свои контракты, то вместо этого вам следует **отключения** их путем изменения некоторого внутреннего состояния, которое вызывает возврат всех функций. Это делает невозможным использование контракта, так как он немедленно возвращает Эфир.
 ___
 
-
 ### Precompiled Contracts
+### Предварительно скомпилированные контракты
 
-There is a small set of contract addresses that are special: The address range between 1 and (including) 8 contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
+EN
+There is a small set of contract addresses that are special: The address range between `1` and (including) `8` contains “precompiled contracts” that can be called as any other contract but their behaviour (and their gas consumption) is not defined by EVM code stored at that address (they do not contain code) but instead is implemented in the EVM execution environment itself.
 
-Different EVM-compatible chains might use a different set of precompiled contracts. It might also be possible that new precompiled contracts are added to the Ethereum main chain in the future, but you can reasonably expect them to always be in the range between 1 and 0xffff (inclusive).
+RU
+Сущевстует небольшой набор адресов контрактов, которые имеют специальное назначение: Диапазон адресов между <g>`1`</g> и <g>`8`</g>(включительно) содержит "предкомпилированные контракты", которые могут быть вызваны как любой другой контракт, но их поведение (и расход газа) не определяется кодом EVM, хранящимся по этому адресу (они не содержать кода), а реализуется в самой среде выполнения EVM.
+
+EN
+Different EVM-compatible chains might use a different set of precompiled contracts. It might also be possible that new precompiled contracts are added to the Ethereum main chain in the future, but you can reasonably expect them to always be in the range between `1` and <b>`0xffff`</b> (inclusive).
+
+RU
+Различные EVM-совместимые цепочки могут использовать разный набор предварительно скомпилированных контрактов. Также возможно, что в будущем в гавную цепочку Ethereum будут добавлены еще новые предваретльно скомпилированные контракты, но вы можете обоснованно ожидать, что они всегда буду находиться в диапазоне от <b>`1`</b> до <b>`0xffff`</b> (включительно).
+
+
+<style>
+r { color: Red }
+o { color: Orange }
+g { color: Green }
+b { color: #00008B }
+c { color: #6495ED }
+b { color: #cd5c5c }
+</style>
+
+https://www.w3schools.com/cssref/css_colors.php

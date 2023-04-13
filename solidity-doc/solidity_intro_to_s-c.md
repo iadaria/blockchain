@@ -582,3 +582,5 @@ ${\color{black}Black}$
 ${\color{white}White}$
 ${\color{yellow}Yellow}$
 ${\color{orange}Orange}$
+${\color{#6495ed}c}$
+${\color{#cd5c5c}b}$

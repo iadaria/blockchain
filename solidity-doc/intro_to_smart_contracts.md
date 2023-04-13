@@ -269,11 +269,10 @@ RU
 В рамках "механизма отбора порядка"(?) (который называется "майнинг") время от времени может происходить откатывание(отмена) блоков, но только в конце(?) цепочки. Чем больше блоков добавляется поверх определенного блока, тем меньше вероятность того, что этот блок будет не принят. Поэтому может случится так, что ваши транзакции будут отменены и даже удален из блокчейна, но чем дольше вы ждете, тем меньше вероятность что это произойдет.
 
 EN
-
 Note
-
 Transactions are not guaranteed to be included in the next block or any specific future block, since it is not up to the submitter of a transaction, but up to the miners to determine in which block the transaction is included.
 If you want to schedule future calls of your contract, you can use a smart contract automation tool or an oracle service.
+
 RU
 ---
 > **_Примечание:_**

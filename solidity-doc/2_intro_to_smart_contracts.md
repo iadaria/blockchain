@@ -585,3 +585,11 @@ ${\color{yellow}Yellow}$
 ${\color{orange}Orange}$
 ${\color{#6495ed}c}$
 ${\color{#cd5c5c}b}$
+
+```diff
+- text in red
++ text in green
+! text in orange
+# text in gray
+@@ text in purple (and bold)@@
+```

@@ -26,58 +26,52 @@ EN
 At the end of the voting time, `winningProposal()` will return the proposal with the largest number of votes.
 
 RU
-По окончании времени голосования, функция ${\color{#cd5c5c}`winningProposal()`}$ вернет предложение с наибольшим количеством голосов.
-
-```diff
-- text in red
-+ text in green
-! text in orange
-# text in gray
-@@ text in purple (and bold)@@
-```
+По окончании времени голосования, функция `winningProposal()` вернет предложение с наибольшим количеством голосов.
 
 ```javascript
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.7.0 <0.9.0;
 /// @title Voting with delegation.
+/// @title Голосование с делегированием.
 contract Ballot {
-    // This declares a new complex type which will
-    // be used for variables later.
-    // It will represent a single voter.
+    // Здесь объявляется новый сложный тип данных,
+    // которрый позже будет использован для переменных.
+    // Он будет представлять одного избирателя.
     struct Voter {
-        uint weight; // weight is accumulated by delegation
-        bool voted;  // if true, that person already voted
-        address delegate; // person delegated to
-        uint vote;   // index of the voted proposal
+        uint weight; // вес накапливается при делегировании полномочий
+        bool voted;  // если true, то этот человек уже проголосовал
+        address delegate; // лицо, которому делегировали голос
+        uint vote;   // индекс предложения за которое проголосовал избиратель
     }
 
-    // This is a type for a single proposal.
+    // Это объявление типа для представления отдельного предложения.
     struct Proposal {
-        bytes32 name;   // short name (up to 32 bytes)
-        uint voteCount; // number of accumulated votes
+        bytes32 name;  // короткое название (размером дло 32 байт)
+        uint voteCount; // количество накопленных голосов
     }
 
     address public chairperson;
 
-    // This declares a state variable that
-    // stores a `Voter` struct for each possible address.
+    // Здесь мы объявляем переменную состояния, которая
+    // хранит отдельный голос(стуктура `Voter`) для каждого возможного адреса.
     mapping(address => Voter) public voters;
 
-    // A dynamically-sized array of `Proposal` structs.
+    // Динамически изменяемый массив стурктур `Proposal`.
+    // Здесь будут представлены все имеющиеся предложения.
     Proposal[] public proposals;
 
-    /// Create a new ballot to choose one of `proposalNames`.
+    /// Создаем один новый бюллетень для выбора одного из предоставленных `proposalNames`. 
     constructor(bytes32[] memory proposalNames) {
         chairperson = msg.sender;
         voters[chairperson].weight = 1;
 
-        // For each of the provided proposal names,
-        // create a new proposal object and add it
-        // to the end of the array.
+        // Для каждого из предоставленных наименований предложений,
+        // создаем один новый объект предложение и добавляем его
+        // в конец массива
         for (uint i = 0; i < proposalNames.length; i++) {
-            // `Proposal({...})` creates a temporary
-            // Proposal object and `proposals.push(...)`
-            // appends it to the end of `proposals`.
+            // `Proposal({...})` создает временный
+            // Proposal объект и `proposals.puhs(...)`
+            // добавляет его в конец `proposals`.
             proposals.push(Proposal({
                 name: proposalNames[i],
                 voteCount: 0
@@ -85,19 +79,18 @@ contract Ballot {
         }
     }
 
-    // Give `voter` the right to vote on this ballot.
-    // May only be called by `chairperson`.
+    // Даем `voter` право голосовать по этому бюллетеню.
+    // Данная функция может быть вызвана только `chairperson`(председателем)
     function giveRightToVote(address voter) external {
-        // If the first argument of `require` evaluates
-        // to `false`, execution terminates and all
-        // changes to the state and to Ether balances
-        // are reverted.
-        // This used to consume all gas in old EVM versions, but
-        // not anymore.
-        // It is often a good idea to use `require` to check if
-        // functions are called correctly.
-        // As a second argument, you can also provide an
-        // explanation about what went wrong.
+        // Если первый аргумент `require` равен false,
+        // то выполнение прерывается и все изменения в состоянии
+        // и в балансе Эфира будут отменены.
+        // Раньше это потребляло весь газ в старых версия EVM,
+        // но больше этого не происходит.
+        // Часто бывает полезно использовать `require` для проверки того,
+        // правильно ли вызвана функция
+        // В качестве второго аргумента, вы можете передавать
+        // объяснение того, что пошло не так.
         require(
             msg.sender == chairperson,
             "Only chairperson can give right to vote."
@@ -110,9 +103,9 @@ contract Ballot {
         voters[voter].weight = 1;
     }
 
-    /// Delegate your vote to the voter `to`.
+    /// Делегируем свой голос избирателю `to`.
     function delegate(address to) external {
-        // assigns reference
+        // присваиваем ссылку
         Voter storage sender = voters[msg.sender];
         require(sender.weight != 0, "You have no right to vote");
         require(!sender.voted, "You already voted.");
@@ -127,6 +120,16 @@ contract Ballot {
         // In this case, the delegation will not be executed,
         // but in other situations, such loops might
         // cause a contract to get "stuck" completely.
+        
+        // Передавайте делегирование до тех пора пока
+        // у `to` будет отсутстовать лицо которому он делегирует
+        //  или пока не получим ошибку зацикливания.
+        // В целом, такие циклы очень рискованы,
+        // потому что, если он выполняются слишком долго, им может
+        // потребоваться больше газа, чем доступно в блоке.
+        // В этом случае, делегирование не будет выполнено,
+        // но в других ситуациях, такие циклы могут
+        // привести к тому, что контракт полностью "зависнет"
         while (voters[to].delegate != address(0)) {
             to = voters[to].delegate;
 

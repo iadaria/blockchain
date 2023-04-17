@@ -124,33 +124,33 @@ contract Ballot {
         while (voters[to].delegate != address(0)) {
             to = voters[to].delegate;
 
-            // Если произошло зациклирование в делегировании, что недопустимо.
+            // Проверяем произошло ли зациклирование в делегировании, что недопустимо.
             require(to != msg.sender, "Found loop in delegation.");
         }
 
         Voter storage delegate_ = voters[to];
 
-        // Voters cannot delegate to accounts that cannot vote.
+        // Избиратели не могут делегировать полномочия тем аккаунтам, которые не могут голосовать
         require(delegate_.weight >= 1);
 
-        // Since `sender` is a reference, this
-        // modifies `voters[msg.sender]`.
+        // Поскольку `sender` является ссылкой,
+        // это мы изменяем `voters[msg.sender]`.
         sender.voted = true;
         sender.delegate = to;
 
         if (delegate_.voted) {
-            // If the delegate already voted,
-            // directly add to the number of votes
+            // Если делегат уже проголосовал, 
+            // напрямую прибаляем к количеству голосов
             proposals[delegate_.vote].voteCount += sender.weight;
         } else {
-            // If the delegate did not vote yet,
-            // add to her weight.
+            // Если делегат еще не проголосовал,
+            // то прибавляем к его весу
             delegate_.weight += sender.weight;
         }
     }
 
-    /// Give your vote (including votes delegated to you)
-    /// to proposal `proposals[proposal].name`.
+    /// Отдаем свой голос (включая делегированные вам голоса)
+    /// предложениею `proposals[proposal].name`.
     function vote(uint proposal) external {
         Voter storage sender = voters[msg.sender];
         require(sender.weight != 0, "Has no right to vote");
@@ -161,11 +161,14 @@ contract Ballot {
         // If `proposal` is out of the range of the array,
         // this will throw automatically and revert all
         // changes.
+        // Если `proposal` находится вне диапазона масива,
+        // то следующая строка кода вызовет ошибку и откатит
+        // все изменения
         proposals[proposal].voteCount += sender.weight;
     }
 
-    /// @dev Computes the winning proposal taking all
-    /// previous votes into account.
+    /// @dev Вычисляем победившее предложение с учетом
+    /// всех предыдущих голосований.
     function winningProposal() public view
             returns (uint winningProposal_)
     {
@@ -178,9 +181,9 @@ contract Ballot {
         }
     }
 
-    // Calls winningProposal() function to get the index
-    // of the winner contained in the proposals array and then
-    // returns the name of the winner
+    // Вызываем функцию winningProposal() чтобы получить индекс
+    // победителя, содержащегося в массиве всех предложений, а затем
+    // возвращаем имя победителя
     function winnerName() external view
             returns (bytes32 winnerName_)
     {
@@ -188,3 +191,12 @@ contract Ballot {
     }
 }
 ```
+
+Possible Improvements
+Currently, many transactions are needed to assign the rights to vote to all participants. Moreover, if two or more proposals have the same number of votes, winningProposal() is not able to register a tie. Can you think of a way to fix these issues?
+
+Blind Auction
+In this section, we will show how easy it is to create a completely blind auction contract on Ethereum. We will start with an open auction where everyone can see the bids that are made and then extend this contract into a blind auction where it is not possible to see the actual bid until the bidding period ends.
+
+Simple Open Auction
+The general idea of the following simple auction contract is that everyone can send their bids during a bidding period. The bids already include sending money / Ether in order to bind the bidders to their bid. If the highest bid is raised, the previous highest bidder gets their money back. After the end of the bidding period, the contract has to be called manually for the beneficiary to receive their money - contracts cannot activate themselves.

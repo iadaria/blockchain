@@ -205,62 +205,66 @@ EN
 In this section, we will show how easy it is to create a completely blind auction contract on Ethereum. We will start with an open auction where everyone can see the bids that are made and then extend this contract into a blind auction where it is not possible to see the actual bid until the bidding period ends.
 
 RU
-### Аукцион вслепую / Аукцион "втемную"
-В этом разделе, мы покажем, как легко создать контракт аукциона полностью вслепую(?) на Ethereum.
-
+### Аукцион Вслепую / Аукцион "втемную"
+В этом разделе, мы покажем, как легко создать контракт аукциона полностью вслепую(?) на Ethereum. Начнем мы с открытого аукциона, где каждый может видеть сделанные ставки, а зетем расширим этот контракт до аукциона вслепую, где невозможно увидеть актуальную ставку до самого окончания периода торгов.
 
 EN
 ### Simple Open Auction
-###
+### Простой Открытый Аукцион
 
 The general idea of the following simple auction contract is that everyone can send their bids during a bidding period. The bids already include sending money / Ether in order to bind the bidders to their bid. If the highest bid is raised, the previous highest bidder gets their money back. After the end of the bidding period, the contract has to be called manually for the beneficiary to receive their money - contracts cannot activate themselves.
 
 RU
+Общая идея следующего контракта простого аукциона заключается в том, что каждый может отправлять свои ставки/заявки/предложения (?) в течении периода торгов. Ставки уже включают отправку денег / Эфира для того, чтобы связать участников торгов с их ставкой. Если самая высокая ставка повышается, предыдущий участник самой высокой ставки получает свои деньги обратно. После окончания периода торгов, контракт должен быть вызван вручную, чтобы бенефициар получил свои деньги - контракты не могут запускаться самостоятельно.
 
 ```javascript
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 contract SimpleAuction {
-    // Parameters of the auction. Times are either
-    // absolute unix timestamps (seconds since 1970-01-01)
-    // or time periods in seconds.
+    // Параметры аукциона. Время будет либо
+    // абсолютным в формате  `unix timestamp` (т.е. в секундах с 1970-01-01)
+    // или временные интервалы в секундах.
     address payable public beneficiary;
     uint public auctionEndTime;
 
-    // Current state of the auction.
-    address public highestBidder;
-    uint public highestBid;
+    // Текущее состояние аукциона.
+    address public highestBidder; // кто больше заплатит
+    uint public highestBid; // самая высокая ставка/предложение
 
+    // TODO 
     // Allowed withdrawals of previous bids
+    // Разрешенные отзывы предыдущих ставок
+    // Допустимые/разрешенные выводы/выпалты предыдущих предложений ???
     mapping(address => uint) pendingReturns;
 
-    // Set to true at the end, disallows any change.
-    // By default initialized to `false`.
+    // Устанавливаем в `true` в конце, запрещаются любые изменения.
+    // По умолчанию инициализируется `false`.
     bool ended;
 
     // Events that will be emitted on changes.
+    // События, которые будут вызываны при изменениях.
     event HighestBidIncreased(address bidder, uint amount);
     event AuctionEnded(address winner, uint amount);
 
-    // Errors that describe failures.
+    // Далее идут ошибки, описывающие сбои.
 
-    // The triple-slash comments are so-called natspec
-    // comments. They will be shown when the user
-    // is asked to confirm a transaction or
-    // when an error is displayed.
+    // Комментарии с тройной косой чертой - это так называемые `natspec`
+    // комментарии. Они будут выводиться, когда у пользователя
+    // запрашивается подтверждение транзакции или
+    // когда отображается ошибка.
 
-    /// The auction has already ended.
+    /// Аукцион уже законился.
     error AuctionAlreadyEnded();
-    /// There is already a higher or equal bid.
+    /// Уже есть более высокая ил равная ставка
     error BidNotHighEnough(uint highestBid);
-    /// The auction has not ended yet.
+    /// Аукцион еще не закончился.
     error AuctionNotYetEnded();
-    /// The function auctionEnd has already been called.
+    /// Функция `auctionEnd` уже была взывана.
     error AuctionEndAlreadyCalled();
 
-    /// Create a simple auction with `biddingTime`
-    /// seconds bidding time on behalf of the
-    /// beneficiary address `beneficiaryAddress`.
+    /// Создаем простой аукцион с `biddingTime`
+    /// где время торгов задается в секундах от имени
+    /// адреса бенефициара `beneficiaryAddress`
     constructor(
         uint biddingTime,
         address payable beneficiaryAddress
@@ -269,36 +273,34 @@ contract SimpleAuction {
         auctionEndTime = block.timestamp + biddingTime;
     }
 
-    /// Bid on the auction with the value sent
-    /// together with this transaction.
-    /// The value will only be refunded if the
-    /// auction is not won.
+    /// Предлагаем цену со значением, отправленным
+    /// вместе с транзакцией. `{ value: <number> }`
+    /// Стоимость будте возвращена только в том случае, если
+    /// аукцион не будет выйгран.
     function bid() external payable {
-        // No arguments are necessary, all
-        // information is already part of
-        // the transaction. The keyword payable
-        // is required for the function to
-        // be able to receive Ether.
+        // Никаких аргументов не требуется, вся
+        // информация уже является частью
+        // транзакции. Ключевое слово `payable`
+        // требуется для того, чтобы функция
+        // имела возможность получать Эфир.
 
-        // Revert the call if the bidding
-        // period is over.
+        // Вернет вызов если период торгов закончился.
         if (block.timestamp > auctionEndTime)
             revert AuctionAlreadyEnded();
 
-        // If the bid is not higher, send the
-        // money back (the revert statement
-        // will revert all changes in this
-        // function execution including
-        // it having received the money).
+        // Если ставка не выше актуальной, отправляет
+        // деньги обратно 
+        // (опертаор `revert` отменяет все изменения 
+        // сделанные этой функцией, включая получение денег)
         if (msg.value <= highestBid)
             revert BidNotHighEnough(highestBid);
 
         if (highestBid != 0) {
-            // Sending back the money by simply using
-            // highestBidder.send(highestBid) is a security risk
-            // because it could execute an untrusted contract.
-            // It is always safer to let the recipients
-            // withdraw their money themselves.
+            // Отправка обратно денег простым способом
+            // `highestBidder.send(highestBid)` представляет собой риск для безопасности
+            // потому как это может привести к выполнению ненадежного контракта.
+            // Всегда безопаснее позволять получателям,
+            // самостоятельно выввести свои деньги.
             pendingReturns[highestBidder] += highestBid;
         }
         highestBidder = msg.sender;
@@ -306,20 +308,28 @@ contract SimpleAuction {
         emit HighestBidIncreased(msg.sender, msg.value);
     }
 
-    /// Withdraw a bid that was overbid.
+    /// Отозван ставку которая была перебита другой более высокой ставкой.
     function withdraw() external returns (bool) {
         uint amount = pendingReturns[msg.sender];
         if (amount > 0) {
             // It is important to set this to zero because the recipient
             // can call this function again as part of the receiving call
             // before `send` returns.
+            // Важно установить это значение равным нулю, потому что получатель
+            //(?) может вызывать эту функцию снова (?)as part of the receiving call(?)
+            // до того, `send` вернется/завершится.
             pendingReturns[msg.sender] = 0;
 
             // msg.sender is not of type `address payable` and must be
             // explicitly converted using `payable(msg.sender)` in order
             // use the member function `send()`.
+            // Поскольку `msg.sender` не является типом `address payable`, то должен быть
+            // явно преобразован с помощью `payable(msg.sender)`, чтобы
+            //(?) использовать (?)memeber(?) функцию `send()`.
             if (!payable(msg.sender).send(amount)) {
                 // No need to call throw here, just reset the amount owing
+                //(?) Сдесь не нужно выбрасывать ошибку через `throw` (?)
+                // просто восстанавливаем сумму долга
                 pendingReturns[msg.sender] = amount;
                 return false;
             }
@@ -327,8 +337,8 @@ contract SimpleAuction {
         return true;
     }
 
-    /// End the auction and send the highest bid
-    /// to the beneficiary.
+    /// Завершаем аукцион и отправляет самую высокую ставку
+    /// бенефициару.
     function auctionEnd() external {
         // It is a good guideline to structure functions that interact
         // with other contracts (i.e. they call functions or send Ether)
@@ -337,23 +347,35 @@ contract SimpleAuction {
         // 2. performing actions (potentially changing conditions)
         // 3. interacting with other contracts
         // If these phases are mixed up, the other contract could call
-        // back into the current contract and modify the state or cause
+        // (?) back into the current contract and modify the state or cause
         // effects (ether payout) to be performed multiple times.
         // If functions called internally include interaction with external
         // contracts, they also have to be considered interaction with
         // external contracts.
 
-        // 1. Conditions
+        // Хорошей практикой является структурирование функций, которые
+        // взаимодействую с другими контрактами (т.е. вызывают функции или отправляют Эфир)
+        // Выделяются три этапа:
+        // 1. проверка условий
+        // 2. выполнение действий (потенциально изменяющих условия)
+        // 3. взаимодействие с другими контрактами
+        // Если эти шаги буду перепутаны, другой контракт может заставить
+        // (?)вернуться в текущий контракт и изменить состояние или вызвать
+        // эффекты (выплата эфира), которые могут выполняться несколько раз.
+        // Если функции, вызываемые внутри контракта, включают взаимодейтсвие с внешними
+        // контрактами, они также должны учитывать это при взаимодействии в внешними контрактами.
+
+        // 1. Условия
         if (block.timestamp < auctionEndTime)
             revert AuctionNotYetEnded();
         if (ended)
             revert AuctionEndAlreadyCalled();
 
-        // 2. Effects
+        // 2. Эффекты/действия
         ended = true;
         emit AuctionEnded(highestBidder, highestBid);
 
-        // 3. Interaction
+        // 3. Взаимодействие
         beneficiary.transfer(highestBid);
     }
 }

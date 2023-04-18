@@ -217,7 +217,7 @@ The general idea of the following simple auction contract is that everyone can s
 RU
 Общая идея следующего контракта простого аукциона заключается в том, что каждый может отправлять свои ставки/заявки/предложения (?) в течении периода торгов. Ставки уже включают отправку денег / Эфира для того, чтобы связать участников торгов с их ставкой. Если самая высокая ставка повышается, предыдущий участник самой высокой ставки получает свои деньги обратно. После окончания периода торгов, контракт должен быть вызван вручную, чтобы бенефициар получил свои деньги - контракты не могут запускаться самостоятельно.
 
-```javascript
+```c
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity ^0.8.4;
 contract SimpleAuction {
@@ -231,10 +231,7 @@ contract SimpleAuction {
     address public highestBidder; // кто больше заплатит
     uint public highestBid; // самая высокая ставка/предложение
 
-    // TODO 
-    // Allowed withdrawals of previous bids
-    // Разрешенные отзывы предыдущих ставок
-    // Допустимые/разрешенные выводы/выпалты предыдущих предложений ???
+    // Разрешенные отзывы/взвраты предыдущих ставок
     mapping(address => uint) pendingReturns;
 
     // Устанавливаем в `true` в конце, запрещаются любые изменения.
@@ -377,6 +374,208 @@ contract SimpleAuction {
 
         // 3. Взаимодействие
         beneficiary.transfer(highestBid);
+    }
+}
+```
+
+### Blind Auction
+
+### Аукцион Вслепую
+
+EN
+The previous open auction is extended to a blind auction in the following. The advantage of a blind auction is that there is no time pressure towards the end of the bidding period. Creating a blind auction on a transparent computing platform might sound like a contradiction, but cryptography comes to the rescue.
+
+RU
+Ранее рассмотренный нами контракт открытого аукциона мы дополним и получим контракт аукциона вслепую. Преимущество аукциона вслепую заключается в отсутсвии спешки по времени ближе к концу проведения торгов. Создание аукциона вслепую  на прозрачно вычислительной платформе может показаться противоречивым, но на помощь приходит криптография.
+
+EN
+During the **bidding period**, a bidder does not actually send their bid, but only a hashed version of it. Since it is currently considered practically impossible to find two (sufficiently long) values whose hash values are equal, the bidder commits to the bid by that. After the end of the bidding period, the bidders have to reveal their bids: They send their values unencrypted, and the contract checks that the hash value is the same as the one provided during the bidding period. 
+
+RU
+Во время **проведения торгов** участник на самом деле не отправляет свою заявку, а только ее хэшированную версию. Поскольку на данный момент считается что практически невозможно найти два (достаточно длинных) значения, хэш-значениия которых были бы равны, и участник торгов берет на себя обязательство и делает свою ставку именно таким образом. После окончания периода торгов, участники должны раскрыть свои предложения: Они отправляют свои значения ставок (?) в незашифрованном виде, а контракт проверяет, совпадает ли хэш-значение с тем, которое было предоставлено этим участником в период, когда проходили торги.
+
+EN
+Another challenge is how to make the auction **binding and blind** at the same time: The only way to prevent the bidder from just not sending the money after they won the auction is to make them send it together with the bid. Since value transfers cannot be blinded in Ethereum, anyone can see the value.
+
+RU
+Другая загвоздка заключается в том, как сделать аукцион одновременно и обязательным/принудительным(?) и слепым: Единственный способ помешать участнику - это просто не отправлять деньги после их победы в аукционе, а заставить их отправлять их(?) вместе с заявкой. Поскольку в Ethereum (передачи стоимости/операции по переводу) не могут быть сделаны "вслепую", то любой может увидеть стоимость/значение. (?)
+
+EN
+The following contract solves this problem by accepting any value that is larger than the highest bid. Since this can of course only be checked during the reveal phase, some bids might be **invalid**, and this is on purpose (it even provides an explicit flag to place invalid bids with high-value transfers): Bidders can confuse competition by placing several high or low invalid bids.
+
+RU
+Следующий рассматриваемый контракт решает эту проблему, принимая любое значение, которое больше самой высокой ставки. Поскольку это можно проверить только на этапе раскрытия, некоторые ставки могут оказаться **недействительными**, и это сделано специально (в контракте даже предусмотрен явный флаг для размещения недействительных ставок с передачей высокой стоимости (?)): Участники торгов мгут запутать конкурентов, разместив несколько высоких или низких недействительных предложений.
+
+```javascript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.4;
+contract BlindAuction {
+    struct Bid {
+        bytes32 blindedBid;
+        uint deposit;
+    }
+
+    address payable public beneficiary;
+    uint public biddingEnd;
+    uint public revealEnd;
+    bool public ended;
+
+    mapping(address => Bid[]) public bids;
+
+    address public highestBidder;
+    uint public highestBid;
+
+    // Разрешены отзывы/возвраты предыдущих заявок
+    mapping(address => uint) pendingReturns;
+
+    event AuctionEnded(address winner, uint highestBid);
+
+    // Ошибки, описывающие сбои
+
+    /// Функция была вызывана слишком рано.
+    /// Попробуйте снова в `time`
+    error TooEarly(uint time);
+    /// Функция была вызывана слишком позжно.
+    /// Она не может быть вызвана после `time`.
+    error TooLate(uint time);
+    /// Функция `auctionEnd` уже была вызвана.
+    error AuctionEndAlreadyCalled();
+
+    // Модификаторы - это удобный способ проверить передаваемые
+    // функциям данные. `onlyBefore` применяется к `bid`:
+    // Новое тело функции является телом модификатором, где
+    // `_`(знак подчеркивания) заменяется старым телом функции.
+    modifier onlyBefore(uint time) {
+        if (block.timestamp >= time) revert TooLate(time);
+        _;
+    }
+    modifier onlyAfter(uint time) {
+        if (block.timestamp <= time) revert TooEarly(time);
+        _;
+    }
+
+    constructor(
+        uint biddingTime,
+        uint revealTime,
+        address payable beneficiaryAddress
+    ) {
+        beneficiary = beneficiaryAddress;
+        biddingEnd = block.timestamp + biddingTime;
+        revealEnd = biddingEnd + revealTime;
+    }
+
+    /// Place a blinded bid with `blindedBid` =
+    /// keccak256(abi.encodePacked(value, fake, secret)).
+    /// The sent ether is only refunded if the bid is correctly
+    /// revealed in the revealing phase. The bid is valid if the
+    /// ether sent together with the bid is at least "value" and
+    /// "fake" is not true. Setting "fake" to true and sending
+    /// not the exact amount are ways to hide the real bid but
+    /// still make the required deposit. The same address can
+    /// place multiple bids.
+    /// Размещаем ставку "вслепую" с `blindBid` = keccak256(abi.encodePacked(value, fake, secret)).
+    /// Отправленный эфир возвращается только в том случае, если ставка 
+    /// правильно раскрыта на этапе раскрытия. Ставка действительна, если
+    /// эфир, отправленный вместе со ставкой, с минимальной стоимостью `value` 
+    /// и `fake` не равен true. Установка `fake` в true и отправка
+    /// неточной суммы - являются способами скрыть реальную ставку, но
+    /// при этом требуется внести депозит. 
+    /// Один и тот же адрес может размещать несколько ставок.
+    function bid(bytes32 blindedBid)
+        external
+        payable
+        onlyBefore(biddingEnd)
+    {
+        bids[msg.sender].push(Bid({
+            blindedBid: blindedBid,
+            deposit: msg.value
+        }));
+    }
+
+    /// Оглашаем свои ставки, сделанные вслепую. Вам вернуться деньги/эфир
+    /// за все правильно закрытые недействительные ставки и за все ставки,
+    /// за исключение самой высокой.
+    function reveal(
+        uint[] calldata values,
+        bool[] calldata fakes,
+        bytes32[] calldata secrets
+    )
+        external
+        onlyAfter(biddingEnd)
+        onlyBefore(revealEnd)
+    {
+        uint length = bids[msg.sender].length;
+        require(values.length == length);
+        require(fakes.length == length);
+        require(secrets.length == length);
+
+        uint refund;
+        for (uint i = 0; i < length; i++) {
+            Bid storage bidToCheck = bids[msg.sender][i];
+            (uint value, bool fake, bytes32 secret) =
+                    (values[i], fakes[i], secrets[i]);
+            if (bidToCheck.blindedBid != keccak256(abi.encodePacked(value, fake, secret))) {
+                // Ставка на самом деле не была раскрыта.
+                // Не возвращаем депозит.
+                continue;
+            }
+            refund += bidToCheck.deposit;
+            if (!fake && bidToCheck.deposit >= value) {
+                if (placeBid(msg.sender, value))
+                    refund -= value;
+            }
+            // Make it impossible for the sender to re-claim
+            // the same deposit.
+            // Делаем невозможным для отправи
+            // 
+            bidToCheck.blindedBid = bytes32(0);
+        }
+        payable(msg.sender).transfer(refund);
+    }
+
+    /// Withdraw a bid that was overbid.
+    function withdraw() external {
+        uint amount = pendingReturns[msg.sender];
+        if (amount > 0) {
+            // It is important to set this to zero because the recipient
+            // can call this function again as part of the receiving call
+            // before `transfer` returns (see the remark above about
+            // conditions -> effects -> interaction).
+            pendingReturns[msg.sender] = 0;
+
+            payable(msg.sender).transfer(amount);
+        }
+    }
+
+    /// End the auction and send the highest bid
+    /// to the beneficiary.
+    function auctionEnd()
+        external
+        onlyAfter(revealEnd)
+    {
+        if (ended) revert AuctionEndAlreadyCalled();
+        emit AuctionEnded(highestBidder, highestBid);
+        ended = true;
+        beneficiary.transfer(highestBid);
+    }
+
+    // Это "внутренняя" функция, что означает, что она 
+    // может быть вызвана только из самого контракта (или из)
+    // производных контрактов).
+    function placeBid(address bidder, uint value) internal
+            returns (bool success)
+    {
+        if (value <= highestBid) {
+            return false;
+        }
+        if (highestBidder != address(0)) {
+            // Фиксируем необходимость возврата средств для предыдущего участника торгов
+            // который ранее сделал самую высокую ставку.
+            pendingReturns[highestBidder] += highestBid;
+        }
+        highestBid = value;
+        highestBidder = bidder;
+        return true;
     }
 }
 ```

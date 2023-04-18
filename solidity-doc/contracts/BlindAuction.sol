@@ -16,7 +16,6 @@ contract BlindAuction {
     address public highestBidder;
     uint public highestBid;
 
-    // Allowed withdrawals of previous bids
     mapping(address => uint) pendingReturns;
 
     event AuctionEnded(address winner, uint highestBid);
@@ -32,10 +31,6 @@ contract BlindAuction {
     /// The function auctionEnd has already been called.
     error AuctionEndAlreadyCalled();
 
-    // Modifiers are a convenient way to validate inputs to
-    // functions. `onlyBefore` is applied to `bid` below:
-    // The new function body is the modifier's body where
-    // `_` is replaced by the old function body.
     modifier onlyBefore(uint time) {
         if (block.timestamp >= time) revert TooLate(time);
         _;

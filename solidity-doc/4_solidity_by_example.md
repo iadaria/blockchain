@@ -792,7 +792,7 @@ RU
 У Алисы нет необходимости взаимодействовать с сетью Ethereum для подписания транзакции, этот процесс происходит полностью офлайн/автономно. В этой документации, мы будем подписывать сообщения в браузере с помощью библиотеки web3.js и MetaMask, используя метод, описанный в EIP-712, поскольку он обеспечивает ряд других преимуществ в плане безопасности.
 
 ```javascript
-/// Hashing first makes things easier
+/// Предварительное хэширование все упрощает
 var hash = web3.utils.sha3("message to sign");
 web3.eth.personal.sign(hash, web3.eth.defaultAccount, function () { console.log("Signed"); });
 ```
@@ -805,3 +805,160 @@ The web3.eth.personal.sign prepends the length of the message to the signed data
 ___
 `web3.eth.personal.sign` добавляет длину сообщения к подписанным данным. Поскольку мы сначала хэшируем сообщение, длина сообщения всегда будет ровно 32 байта, поэтому префикс длины всегда один и тот же.
 ___
+
+### What to Sign
+### Что подписывать
+
+EN
+For a contract that fulfils payments, the signed message must include:
+1. The recipient’s address.
+2. The amount to be transferred.
+3. Protection against replay attacks.
+
+RU
+В контракте, по которому осуществляются платежи, подписанное сообщение должно содержать:
+1. Адрес получателя.
+2. Сумму, подлежащая переводу.
+3. Защита от атак повторного воспроизведения. (?)
+
+EN
+A replay attack is when a signed message is reused to claim authorization for a second action. To avoid replay attacks we use the same technique as in Ethereum transactions themselves, a so-called nonce, which is the number of transactions sent by an account. The smart contract checks if a nonce is used multiple times.
+
+RU
+Атака повторного воспроизведения - это когда подписанное сообщение используется повторно для получения разрешения на повтоное действие. Чтобы избежать атак повторного воспроизвдеения, мы используем ту же технику, что и в самих транзакциях Ethereum, - так называемый `nonce`(одноразовый номер), который представляет собой количество транзакций, отправленных аккаунтом. Смарт-контракт проверяет, не используется ли `nonce` несколько раз.
+
+**nonce** - number that can only be used once - число, которое может быть использовано один раз, одноразовый код.
+
+EN
+Another type of replay attack can occur when the owner deploys a ReceiverPays smart contract, makes some payments, and then destroys the contract. Later, they decide to deploy the RecipientPays smart contract again, but the new contract does not know the nonces used in the previous deployment, so the attacker can use the old messages again.
+
+RU
+Другой тип атаки повторного воспроизведения может возникнуть, когда владелец контракта публикует смарт-контракт `ReceiverPays`, проводит несколько платежей, а затем уничтожает контракт. Позже, они решают снова развернуть смарт-контракт `RceiverPays`, но новый контракт не знает `nonces`(всех одноразовых кодов), использованных в предыдущей публикации, поэтому злоумышленник может снова использовать старые сообщения.
+
+EN
+Alice can protect against this attack by including the contract’s address in the message, and only messages containing the contract’s address itself will be accepted. You can find an example of this in the first two lines of the claimPayment() function of the full contract at the end of this section.
+
+RU
+Алиса может защититься от этой атаки, включив адреса контракта в сообщение, и только сообщения, содержащие адрес самого контракта, будут приняты. Пример этого можно найти в первых двух строках функции `claimPayment()` полного контракта в конце этого раздела.
+
+### Packing arguments
+### Упаковка аргументов
+
+EN
+Now that we have identified what information to include in the signed message, we are ready to put the message together, hash it, and sign it. For simplicity, we concatenate the data. The ethereumjs-abi library provides a function called soliditySHA3 that mimics the behaviour of Solidity’s keccak256 function applied to arguments encoded using abi.encodePacked. Here is a JavaScript function that creates the proper signature for the ReceiverPays example:
+
+RU
+Теперь, когда мы определились, какую информацию включить в подписываемое сообщение, мы готовы собрать сообщение воедино, хэшировать его, а затем подписать. Для простоты, мы будем соединять данные. Библиотека ethereumjs-abi предоставляет функцию `soliditySHA3`, которая имитирует поведение функции `keccak256` от Solidity, применяемой к аргументам, закодированным с помощью `abi.encodePacked`. Вот функция JavaScript, которая создает правильну подпись для примера контракта `ReceiverPays`:
+
+
+```javascript
+// `receipent` - это адрес, на который следует отправить деньги.
+// `amount` - в wei, указывает, сколько эфира должно быть отправлено.
+// `nonce` - может быть любым уникальным числом для предотвращения атак воспроизведения.
+// `contractAddress` - используется для предотвращения межконтрактных атак воспроизведения.
+function signPayment(recipient, amount, nonce, contractAddress, callback) {
+    var hash = "0x" + abi.soliditySHA3(
+        ["address", "uint256", "uint256", "address"],
+        [recipient, amount, nonce, contractAddress]
+    ).toString("hex");
+
+    web3.eth.personal.sign(hash, web3.eth.defaultAccount, callback);
+}
+```
+
+### Recovering the Message Signer in Solidity
+### Восстановление лица подписавшего сообщение в Solidity
+
+EN
+In general, ECDSA signatures consist of two parameters, r and s. Signatures in Ethereum include a third parameter called v, that you can use to verify which account’s private key was used to sign the message, and the transaction’s sender. Solidity provides a built-in function ecrecover that accepts a message along with the r, s and v parameters and returns the address that was used to sign the message.
+
+RU
+В общем случает, подписи ECDSA состоят из двух частей, `r` and `s`. Подписи в Ethereum включают 3-ий параметр, называемый `v`, который можно использовать для проверки/верификации того, закрытый ключ какой учетной записи был использован для подписания сообщениия, а также отправителя транзакции. Solidity предоставляет встроенную функцию `ecrecover`, которая принимает сообщение вместе с параметрами, `r`, `s` и `v` и возвращает адрес, который был использован для подписи сообщения.
+
+### Extracting the Signature Parameters
+### Извлечение параметров подписи
+
+EN
+Signatures produced by web3.js are the concatenation of r, s and v, so the first step is to split these parameters apart. You can do this on the client-side, but doing it inside the smart contract means you only need to send one signature parameter rather than three. Splitting apart a byte array into its constituent parts is a mess, so we use inline assembly to do the job in the splitSignature function (the third function in the full contract at the end of this section).
+
+RU
+Подписи, создаваемые с помощью web3.js, представляют собой конкатенацию(соединение) `r`, `s` и `v`, поэтому первым шагом будет разделение этих параметров. Вы можете сделать это на стороне клиента, но если сделать это внутри смарт-контракта, то вам нужно будет отправить только один параметр подписи, а не три. Разделение массива байтов на составляющие части - дело непростое, поэтому мы используем `inline assembly` для выполнения этой работы в функции `splitSignature`(это третья функция в полной версии контракта, в конце этого раздела).
+
+### Computing the Message Hash
+### Вычисление хэша сообщения
+
+EN
+The smart contract needs to know exactly what parameters were signed, and so it must recreate the message from the parameters and use that for signature verification. The functions prefixed and recoverSigner do this in the claimPayment function.
+
+RU
+Смарт-контракту необходимо знать, какие именно параметры были подписаны, поэтому он должен воссоздать сообщение из параметров и использовать его для проверки подписи. Функции `prefixed` и `recoverSigner` делают это в функции `claimPayment`.
+
+### The full contract
+### Полная версия контракта
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
+// Это выдаст предупреждение из-за устаревшего `selfdestruct`
+contract ReceiverPays {
+    address owner = msg.sender;
+
+    mapping(uint256 => bool) usedNonces;
+
+    constructor() payable {}
+
+    function claimPayment(uint256 amount, uint256 nonce, bytes memory signature) external {
+        require(!usedNonces[nonce]);
+        usedNonces[nonce] = true;
+
+        // воссоздаем сообщение, которое было подписано на клиенте
+        bytes32 message = prefixed(keccak256(abi.encodePacked(msg.sender, amount, nonce, this)));
+
+        require(recoverSigner(message, signature) == owner);
+
+        payable(msg.sender).transfer(amount);
+    }
+
+    /// уничтожаем контракт и получаем оставшиеся средства.
+    function shutdown() external {
+        require(msg.sender == owner);
+        selfdestruct(payable(msg.sender));
+    }
+
+    /// методы подписи.
+    function splitSignature(bytes memory sig)
+        internal
+        pure
+        returns (uint8 v, bytes32 r, bytes32 s)
+    {
+        require(sig.length == 65);
+
+        assembly {
+            // первые 32 байта, после префикса длины.
+            r := mload(add(sig, 32))
+            // вторые 32 байта.
+            s := mload(add(sig, 64))
+            // последний байт (первый байт из следующих 32 байтов).
+            v := byte(0, mload(add(sig, 96)))
+        }
+
+        return (v, r, s);
+    }
+
+    function recoverSigner(bytes32 message, bytes memory sig)
+        internal
+        pure
+        returns (address)
+    {
+        (uint8 v, bytes32 r, bytes32 s) = splitSignature(sig);
+
+        return ecrecover(message, v, r, s);
+    }
+
+    /// builds a prefixed hash to mimic the behavior of eth_sign.
+    /// ставит префиксный хэш, чтобы имитировать поведение `eth_sign`.
+    function prefixed(bytes32 hash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    }
+}
+```

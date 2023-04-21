@@ -582,3 +582,159 @@ contract BlindAuction {
     }
 }
 ```
+
+### Safe Remote Purchase
+### Безопасная Удаленная/Дистанционная Покупка
+
+EN
+Purchasing goods remotely currently requires multiple parties that need to trust each other. The simplest configuration involves a seller and a buyer. The buyer would like to receive an item from the seller and the seller would like to get money (or an equivalent) in return. The problematic part is the shipment here: There is no way to determine for sure that the item arrived at the buyer.
+
+RU
+Покупка товаров удаленно в настоящее время требуется участия нескольких сторон, которые должны доверять друг другу. Простейшая форма такого взаимодействия включает продавца и покупателя. Покупаетль хотел бы получить товар от продавца,а продавец взамен хотел бы получить деньги (или эквивалент). Проблемной частью здесь является доствка: Нет возможности точно определить, что товар прибыл к покупателю.
+
+EN
+There are multiple ways to solve this problem, but all fall short in one or the other way. In the following example, both parties have to put twice the value of the item into the contract as escrow. As soon as this happened, the money will stay locked inside the contract until the buyer confirms that they received the item. After that, the buyer is returned the value (half of their deposit) and the seller gets three times the value (their deposit plus the value). The idea behind this is that both parties have an incentive to resolve the situation or otherwise their money is locked forever.
+
+RU
+Существует множество способов решения этой проблемы, но все они не работают в той или иной степени. В следующем примере обе стороны должны внести в договор в качестве условного депонирования(хранения) сумму, вдвое превышающую стоимость товара. Как только это произойдет, деньги останутся заблокированными в контракте до тех пор пока покупатель не подтвердит, что получил товар. После этого покупателю возвращается стоимость(половина его депозита), а продавец получает трехкратную стоимость(его депозит плюс стоимость). Идея заключается в том, что у обеих сторон есть стимул разрешить ситуацию, иначе их деньги будут заблокированны навсегда.
+
+EN
+This contract of course does not solve the problem, but gives an overview of how you can use state machine-like constructs inside a contract.
+
+RU
+Данный контракт, конечно, не решает проблему, но дает представление о том, как можно использовать механизмы, подобно государственной машине, внутри контракта.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.4;
+contract Purchase {
+    uint public value;
+    address payable public seller;
+    address payable public buyer;
+
+    enum State { Created, Locked, Release, Inactive }
+    // Переменная `state` имеет значение по умолчанию первого члена, `State.Created`
+    State public state;
+
+    modifier condition(bool condition_) {
+        require(condition_);
+        _;
+    }
+
+    /// Только покупатель может вызвать эту функцию.
+    error OnlyBuyer();
+    /// Только продавец может вызвать эту функцию.
+    error OnlySeller();
+    /// Функция не может быть вызывана в текущем состоянии.
+    error InvalidState();
+    /// Предоставленное значение должно быть четным.
+    error ValueNotEven();
+
+    modifier onlyBuyer() {
+        if (msg.sender != buyer)
+            revert OnlyBuyer();
+        _;
+    }
+
+    modifier onlySeller() {
+        if (msg.sender != seller)
+            revert OnlySeller();
+        _;
+    }
+
+    modifier inState(State state_) {
+        if (state != state_)
+            revert InvalidState();
+        _;
+    }
+
+    event Aborted();
+    event PurchaseConfirmed();
+    event ItemReceived();
+    event SellerRefunded();
+
+    // Нужно убедиться что `msg.value` четное число.
+    // Деление будет усеченным(c потерей), если это нечетное число.
+    // Проверяем с помощью умножения, что число четное.
+    constructor() payable {
+        seller = payable(msg.sender);
+        value = msg.value / 2;
+        if ((2 * value) != msg.value)
+            revert ValueNotEven();
+    }
+
+    /// Прерываем покупку и возвращаем эфир.
+    /// Может быть вызвана только продавцом до того, как
+    /// контракт будет заблокирован.
+    function abort()
+        external
+        onlySeller
+        inState(State.Created)
+    {
+        emit Aborted();
+        state = State.Inactive;
+        // We use transfer here directly. It is
+        // reentrancy-safe, because it is the
+        // last call in this function and we
+        // already changed the state.
+        // Здесь мы напрямую делаем перевод.
+        // Это безопасно от повторного входа(?), потому что
+        // это последний вызов в этой функци, и
+        // мы уже изменили все необходимые состояния(переменные состояний).
+        seller.transfer(address(this).balance);
+    }
+
+    /// Подтверждаем покупку как покупатель.
+    /// Транзакция должна включать `2 * стоимость` эфира.
+    /// Эфир будет заблокировать до тех пор, 
+    /// пока не будет вызвана функция `confirmReceived`
+    function confirmPurchase()
+        external
+        inState(State.Created)
+        condition(msg.value == (2 * value))
+        payable
+    {
+        emit PurchaseConfirmed();
+        buyer = payable(msg.sender);
+        state = State.Locked;
+    }
+
+    /// Подтверждение, что вы (покупатель) получили товар. 
+    /// Это освободит заблокированный эфир.
+    function confirmReceived()
+        external
+        onlyBuyer
+        inState(State.Locked)
+    {
+        emit ItemReceived();
+        // It is important to change the state first because
+        // otherwise, the contracts called using `send` below
+        // can call in again here.
+        // Важно сначала изменить состояние, т.к иначе
+        // контракты, вызванные с помощью `send` приведенный ниже (?) функционал
+        // могут вызвать это повторно.
+        state = State.Release;
+
+        buyer.transfer(value);
+    }
+
+    /// Эта функция возвращает деньги продавцу, т.е.
+    /// возвращает заблокированные средства продавца
+    function refundSeller()
+        external
+        onlySeller
+        inState(State.Release)
+    {
+        emit SellerRefunded();
+        // It is important to change the state first because
+        // otherwise, the contracts called using `send` below
+        // can call in again here.
+        // Важно сначала изменить состояние, т.к иначе
+        // контракты, вызванные с помощью `send` приведенный ниже (?) функционал
+        // могут вызвать это повторно.
+        state = State.Inactive;
+
+        seller.transfer(3 * value);
+    }
+}
+```

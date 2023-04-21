@@ -524,31 +524,34 @@ contract BlindAuction {
                 if (placeBid(msg.sender, value))
                     refund -= value;
             }
-            // Make it impossible for the sender to re-claim
-            // the same deposit.
-            // Делаем невозможным для отправи
-            // 
+
+            // Делаем невозможным повторное требования на возврат отправителем
+            // того же депозита
             bidToCheck.blindedBid = bytes32(0);
         }
         payable(msg.sender).transfer(refund);
     }
 
-    /// Withdraw a bid that was overbid.
+    /// Отзовать ставку, которая была переибата.
     function withdraw() external {
         uint amount = pendingReturns[msg.sender];
         if (amount > 0) {
             // It is important to set this to zero because the recipient
-            // can call this function again as part of the receiving call
+            //(?) can call this function again as part of the receiving call 
             // before `transfer` returns (see the remark above about
             // conditions -> effects -> interaction).
+            // Важно установить это значение равное нулю, потому что получатель
+            // может вызвать эту функцию снова как часть принимающего вызова
+            // до того как `transfer` вернет результат (см. замечаине выше об
+            // условиях -> эффектах/действиях -> взаимодействии).
             pendingReturns[msg.sender] = 0;
 
             payable(msg.sender).transfer(amount);
         }
     }
 
-    /// End the auction and send the highest bid
-    /// to the beneficiary.
+    /// Завершаем аукцион и отправляем самую высокую ставку
+    /// бенефициару.
     function auctionEnd()
         external
         onlyAfter(revealEnd)

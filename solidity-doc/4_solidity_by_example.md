@@ -738,3 +738,70 @@ contract Purchase {
     }
 }
 ```
+
+### Micropayment Channel
+### Канал для микроплатежей
+
+EN
+In this section, we will learn how to build an example implementation of a payment channel. It uses cryptographic signatures to make repeated transfers of Ether between the same parties secure, instantaneous, and without transaction fees. For the example, we need to understand how to sign and verify signatures, and setup the payment channel.
+
+RU
+В это разделе мы узнаем, как построить пример реализации платежного канала. Он использует криптографические подписи, чтобы сделать повторные переводы Эфира безопасными между одними и теми же сторонами, мгновенными и без комиссии за транзакцию. Для примера, нам нужно понять, как подписывать и верифицировать/проверять подписи, а также настроить платежный канал.
+
+#### Creating and verifying signatures
+#### Создание и проверка подписей
+
+EN
+Imagine Alice wants to send some Ether to Bob, i.e. Alice is the sender and Bob is the recipient.
+
+Alice only needs to send cryptographically signed messages off-chain (e.g. via email) to Bob and it is similar to writing checks.
+
+RU
+Представим, что Алиса хочет отправить некоторое количество Эфиров Бобу, т.е. Алиса - отправитель, а Боб - получатель.
+
+Для этого Алисе нужно только отправить Бобу криптографически подписанное сообщение вне блокчейн-сети (например через email), что похоже на выписанные чеки.
+
+EN
+Alice and Bob use signatures to authorize transactions, which is possible with smart contracts on Ethereum. Alice will build a simple smart contract that lets her transmit Ether, but instead of calling a function herself to initiate a payment, she will let Bob do that, and therefore pay the transaction fee.
+
+RU
+Алиса и Боб используют подписи для авторизации транзакций, что возможно с помощью смарт-контрактов на Эфире.
+Алиса создаст простой смарт-контракт, который позволит ей передавать Эфир, но вместо того, чтобы самой вызывать функцию для инициирования платежа, она позволит Бобу сделать это, и соответственно, оплатить комиссию за транзакцию.
+
+EN
+The contract will work as follows:
+1. Alice deploys the ReceiverPays contract, attaching enough Ether to cover the payments that will be made.
+2. Alice authorizes a payment by signing a message with her private key.
+3. Alice sends the cryptographically signed message to Bob. The message does not need to be kept secret (explained later), and the mechanism for sending it does not matter.
+4. Bob claims his payment by presenting the signed message to the smart contract, it verifies the authenticity of the message and then releases the funds.
+
+RU
+Контракт будет работать следующим образом:
+1. Алиса публикует `ReceiverPays` контракт, прикрепляя достаточное количество Эфира для покрытия платежей, которые будут произведены.
+2. Алиса одобряет/санкционирует платеж, подписывая сообщение с помощью приватного ключа.
+3. Алиса отправляет криптографически подписанное сообщение Бобу. Сообщение не требуется держать в секрете (это объясняется позже), и механизм отправки сообщения Бобу не имеет значение.
+4. Боб требует оплаты, предъявляя подписанное сообщение смарт-контракту, который проверяет подлинность сообщения и затем выдает деньги.
+
+### Creating the signature
+### Создание подписи
+
+EN
+Alice does not need to interact with the Ethereum network to sign the transaction, the process is completely offline. In this tutorial, we will sign messages in the browser using web3.js and MetaMask, using the method described in EIP-712, as it provides a number of other security benefits.
+
+RU
+У Алисы нет необходимости взаимодействовать с сетью Ethereum для подписания транзакции, этот процесс происходит полностью офлайн/автономно. В этой документации, мы будем подписывать сообщения в браузере с помощью библиотеки web3.js и MetaMask, используя метод, описанный в EIP-712, поскольку он обеспечивает ряд других преимуществ в плане безопасности.
+
+```javascript
+/// Hashing first makes things easier
+var hash = web3.utils.sha3("message to sign");
+web3.eth.personal.sign(hash, web3.eth.defaultAccount, function () { console.log("Signed"); });
+```
+
+EN
+>Note
+The web3.eth.personal.sign prepends the length of the message to the signed data. Since we hash first, the message will always be exactly 32 bytes long, and thus this length prefix is always the same.
+
+> <c>ℹ️ Примечание</c>
+___
+`web3.eth.personal.sign` добавляет длину сообщения к подписанным данным. Поскольку мы сначала хэшируем сообщение, длина сообщения всегда будет ровно 32 байта, поэтому префикс длины всегда один и тот же.
+___

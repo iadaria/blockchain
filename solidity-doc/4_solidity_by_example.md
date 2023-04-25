@@ -962,3 +962,66 @@ contract ReceiverPays {
     }
 }
 ```
+
+### Writing a Simple Payment Channel
+### Написание простого платежного канала
+
+EN
+Alice now builds a simple but complete implementation of a payment channel. Payment channels use cryptographic signatures to make repeated transfers of Ether securely, instantaneously, and without transaction fees.
+
+RU
+Теперь Алиса создает простую, но полную реализацию платежного канала. Платежные канала используют криптографические подписи для осуществления повторяющихся переводов Эфира безопасно, мгновенно, и без комиссии за транзакции.
+
+### What is a Payment Channel?
+### Что такое платежный канал?
+
+EN
+Payment channels allow participants to make repeated transfers of Ether without using transactions. This means that you can avoid the delays and fees associated with transactions. We are going to explore a simple unidirectional payment channel between two parties (Alice and Bob). It involves three steps:
+1. Alice funds a smart contract with Ether. This “opens” the payment channel.
+2. Alice signs messages that specify how much of that Ether is owed to the recipient. This step is repeated for each payment.
+3. Bob “closes” the payment channel, withdrawing his portion of the Ether and sending the remainder back to the sender.
+
+RU
+Платежные каналы позволяют участникам осуществлять многократные переводы Эфира без использования транзакций. Это означает, что вы можете избежать задержек и комиссий, связанных с транзакциями. Мы рассмотрим просто односторонний/однонаправленный платежный канал между двумя сторонами(Алисой и Бобом). Он включает в себя три этапа:
+1. Алиса пополняет смарт-контракт Эфиром. Это "открывает" платежный канал.
+2. Алиса подписывает сообщения, в которых указывается, сколько Эфира полагается получателю. Данный шаг повторяется для каждого платежа.
+3. Боб "закрывает" платежный канал, забирая/выводя свою часть Эфира и отправляя остаток обратно отправителю.
+
+EN
+Only steps 1 and 3 require Ethereum transactions, step 2 means that the sender transmits a cryptographically signed message to the recipient via off chain methods (e.g. email). This means only two transactions are required to support any number of transfers.
+
+RU
+**Предупреждение**
+___
+Только для осуществления шагов 1 и 3 требуется выполнение Ethereum-транзакций, шаг 2 означает, что отправитель передает криптографиески подписанное сообщение получателю вне блокчейн цепи (например, по электронно почте). Таким образом, для осуществленния любого количества переводов требуется всего две транзакции.
+___
+
+EN
+Bob is guaranteed to receive his funds because the smart contract escrows the Ether and honours a valid signed message. The smart contract also enforces a timeout, so Alice is guaranteed to eventually recover her funds even if the recipient refuses to close the channel. It is up to the participants in a payment channel to decide how long to keep it open. For a short-lived transaction, such as paying an internet café for each minute of network access, the payment channel may be kept open for a limited duration. On the other hand, for a recurring payment, such as paying an employee an hourly wage, the payment channel may be kept open for several months or years.
+
+RU
+
+EN
+Opening the Payment Channel
+To open the payment channel, Alice deploys the smart contract, attaching the Ether to be escrowed and specifying the intended recipient and a maximum duration for the channel to exist. This is the function SimplePaymentChannel in the contract, at the end of this section.
+
+RU
+
+EN
+Making Payments
+Alice makes payments by sending signed messages to Bob. This step is performed entirely outside of the Ethereum network. Messages are cryptographically signed by the sender and then transmitted directly to the recipient.
+
+Each message includes the following information:
+
+The smart contract’s address, used to prevent cross-contract replay attacks.
+
+The total amount of Ether that is owed to the recipient so far.
+
+RU
+
+EN
+A payment channel is closed just once, at the end of a series of transfers. Because of this, only one of the messages sent is redeemed. This is why each message specifies a cumulative total amount of Ether owed, rather than the amount of the individual micropayment. The recipient will naturally choose to redeem the most recent message because that is the one with the highest total. The nonce per-message is not needed anymore, because the smart contract only honours a single message. The address of the smart contract is still used to prevent a message intended for one payment channel from being used for a different channel.
+
+Here is the modified JavaScript code to cryptographically sign a message from the previous section:
+
+RU

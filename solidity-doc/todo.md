@@ -11,7 +11,7 @@
 3 Заменить все примечания и заметки
 
 После перевода:
-1 На практике применить контракты: Purchase, BlindAuction, ...
+1 На практике применить контракты: Purchase, BlindAuction, ReceiverPays ...
 2 EIP-712 что это такое
 - EIP-712 https://habr.com/ru/articles/483828/
 - https://russianblogs.com/article/8262411331/

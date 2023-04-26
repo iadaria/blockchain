@@ -991,33 +991,40 @@ EN
 Only steps 1 and 3 require Ethereum transactions, step 2 means that the sender transmits a cryptographically signed message to the recipient via off chain methods (e.g. email). This means only two transactions are required to support any number of transfers.
 
 RU
-**Предупреждение**
+> <c>ℹ️ Примечание</c>
 ___
-Только для осуществления шагов 1 и 3 требуется выполнение Ethereum-транзакций, шаг 2 означает, что отправитель передает криптографиески подписанное сообщение получателю вне блокчейн цепи (например, по электронно почте). Таким образом, для осуществленния любого количества переводов требуется всего две транзакции.
+Только для осуществления шагов 1 и 3 требуется выполнение Ethereum-транзакций, шаг 2 означает, что отправитель передает криптографиески подписанное сообщение получателю вне цепи блокчейна (например, по электронной почте). Таким образом, для осуществленния любого количества переводов требуется всего две транзакции.
 ___
 
 EN
 Bob is guaranteed to receive his funds because the smart contract escrows the Ether and honours a valid signed message. The smart contract also enforces a timeout, so Alice is guaranteed to eventually recover her funds even if the recipient refuses to close the channel. It is up to the participants in a payment channel to decide how long to keep it open. For a short-lived transaction, such as paying an internet café for each minute of network access, the payment channel may be kept open for a limited duration. On the other hand, for a recurring payment, such as paying an employee an hourly wage, the payment channel may be kept open for several months or years.
 
 RU
+Боб гарантированно получит свои средства, поскольку смарт-контракт хранит(депонирует) Эфир и исполняет одно(?) действительное подписанное сообщение. Смарт-контракт также обеспечивает время ожидания/блокировку по времени, поэтому Алиса гарантированно вернутся ее средства, даже если получатель(Боб) откажется закрывать свой платежный канал. Участники платежного канала сами решают, как долго держать его открытым. для кратковременных транзакций, например, таких как оплата в интернет-кафе за каждую минуту доступа к сети, платежный канал может оставаться открытым только в течении ограниченного периода времени. С другой стороны, для повторяющихся платежей, таких как почасовая оплата труда работника, платежный канал может оставаться открытым в течении нескольких месяцев или лет.
 
 EN
-Opening the Payment Channel
-To open the payment channel, Alice deploys the smart contract, attaching the Ether to be escrowed and specifying the intended recipient and a maximum duration for the channel to exist. This is the function SimplePaymentChannel in the contract, at the end of this section.
+### Opening the Payment Channel
+To open the payment channel, Alice deploys the smart contract, attaching the Ether to be escrowed and specifying the intended recipient and a maximum duration for the channel to exist. This is the function `SimplePaymentChannel` in the contract, at the end of this section.
 
 RU
+### Открытие платежного канала
+Чтобы открыть платежный канал, Алиса развертывает смарт-контракт, обеспечивая его Эфиром в качестве вложения/депонирования, и указывая предполагаемого получателя и максимальную продолжительность существования канала. Это делает функция контракта `SimplePaymentChanel` приведенного в конце этого раздела.
 
 EN
-Making Payments
+### Making Payments
 Alice makes payments by sending signed messages to Bob. This step is performed entirely outside of the Ethereum network. Messages are cryptographically signed by the sender and then transmitted directly to the recipient.
 
 Each message includes the following information:
-
-The smart contract’s address, used to prevent cross-contract replay attacks.
-
-The total amount of Ether that is owed to the recipient so far.
+- The smart contract’s address, used to prevent cross-contract replay attacks.
+- The total amount of Ether that is owed to the recipient so far.
 
 RU
+### Осуществление Платежей
+Алиса осуществляет платежи, отправляя Бобу подписанные сообщения. Этот шаг выполняется полностью вне сети Ethereum.  Сообщения криптографически подисываются отправителем, а затем передаются непосредственно получателю.
+
+Каждое сообщение содержит следующую информацию:
+1. Адрес смарт-контракта, используемый для предотвращения кросс-контрактных атак повторного воспроизведения(?). 
+2. Общая сумма Эфира, пока что предназначенная получателю.
 
 EN
 A payment channel is closed just once, at the end of a series of transfers. Because of this, only one of the messages sent is redeemed. This is why each message specifies a cumulative total amount of Ether owed, rather than the amount of the individual micropayment. The recipient will naturally choose to redeem the most recent message because that is the one with the highest total. The nonce per-message is not needed anymore, because the smart contract only honours a single message. The address of the smart contract is still used to prevent a message intended for one payment channel from being used for a different channel.
@@ -1025,3 +1032,31 @@ A payment channel is closed just once, at the end of a series of transfers. Beca
 Here is the modified JavaScript code to cryptographically sign a message from the previous section:
 
 RU
+Платежный канал закрывается только один раз, в конце серии переводов. Поэтому, только одно из отправленных сообщений, будет погашено. Вот почему в каждом сообщении указываетя суммарная сумма причитающихся Эфиров, а не сумма отдельного микроплатежа. Получатель, естественно, решит погасить самое последнее сообщение, поскольку именно в нем указана наибольшая сумма. Одноразовый номер `nonce` больше не нужен на каждое сообщение, поскольку смарт-контракт исполняет только одно сообщение. 
+
+
+Измененный JavaScript код для криптографической подписи сообщения из предыдущего раздела:
+```javascript
+function constructPaymentMessage(contractAddress, amount) {
+    return abi.soliditySHA3(
+        ["address", "uint256"],
+        [contractAddress, amount]
+    );
+}
+
+function signMessage(message, callback) {
+    web3.eth.personal.sign(
+        "0x" + message.toString("hex"),
+        web3.eth.defaultAccount,
+        callback
+    );
+}
+
+// contractAddress is used to prevent cross-contract replay attacks.
+// amount, in wei, specifies how much Ether should be sent.
+
+function signPayment(contractAddress, amount, callback) {
+    var message = constructPaymentMessage(contractAddress, amount);
+    signMessage(message, callback);
+}
+```

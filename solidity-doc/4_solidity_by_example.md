@@ -1032,10 +1032,10 @@ A payment channel is closed just once, at the end of a series of transfers. Beca
 Here is the modified JavaScript code to cryptographically sign a message from the previous section:
 
 RU
-Платежный канал закрывается только один раз, в конце серии переводов. Поэтому, только одно из отправленных сообщений, будет погашено. Вот почему в каждом сообщении указываетя суммарная сумма причитающихся Эфиров, а не сумма отдельного микроплатежа. Получатель, естественно, решит погасить самое последнее сообщение, поскольку именно в нем указана наибольшая сумма. Одноразовый номер `nonce` больше не нужен на каждое сообщение, поскольку смарт-контракт исполняет только одно сообщение. 
+Платежный канал закрывается только один раз, в конце серии переводов. Поэтому, только одно из отправленных сообщений, будет погашено. Вот почему в каждом сообщении указываетя суммарная сумма причитающихся Эфиров, а не сумма отдельного микроплатежа. Получатель, естественно, решит погасить самое последнее сообщение, поскольку именно в нем указана наибольшая сумма. Одноразовый номер `nonce` больше не нужен на каждое сообщение, поскольку смарт-контракт исполняет только одно сообщение. Адрес смарт-контракта по-прежнему используется для того, чтобы сообщение, предназначенное для одного платежного канала, не было использовано для другого канала.
 
 
-Измененный JavaScript код для криптографической подписи сообщения из предыдущего раздела:
+Вот доработанный код JavaScript из предыдущего раздела для криптографической подписи сообщения:
 ```javascript
 function constructPaymentMessage(contractAddress, amount) {
     return abi.soliditySHA3(
@@ -1052,11 +1052,210 @@ function signMessage(message, callback) {
     );
 }
 
-// contractAddress is used to prevent cross-contract replay attacks.
-// amount, in wei, specifies how much Ether should be sent.
+// `contractAddress` используется для предотвращения межконтрактных атак воспроизведения (?)
+// `amount`, в wei, указывает сколько Эфира должно быть отправлено
 
 function signPayment(contractAddress, amount, callback) {
     var message = constructPaymentMessage(contractAddress, amount);
     signMessage(message, callback);
+}
+```
+
+### Closing the Payment Channel
+### Закрытие платежного канала
+
+EN
+When Bob is ready to receive his funds, it is time to close the payment channel by calling a close function on the smart contract. Closing the channel pays the recipient the Ether they are owed and destroys the contract, sending any remaining Ether back to Alice. To close the channel, Bob needs to provide a message signed by Alice.
+
+RU
+Когда Боб готов получить свои средства, наступает время закрыть платежный канал, вызвав функцию `close` смарт-контракта. Закрытие канала выплачивает получателю полженные ему Эфиры и уничтожает контракт, отправляя все оставшиеся Эфиры обратно Алисе. Чтобы закрыть канал, Боб должен предоставить сообщение, подписанное Алисой.
+
+EN
+The smart contract must verify that the message contains a valid signature from the sender. The process for doing this verification is the same as the process the recipient uses. The Solidity functions isValidSignature and recoverSigner work just like their JavaScript counterparts in the previous section, with the latter function borrowed from the ReceiverPays contract.
+
+RU
+Смарт-контракт должен проверить, что сообщение содержит действительную подпись отправителя. Процесс этой проверки такой же, как и процесс, использует получатель. Функции Solidity `isValidSignature` и `recoverSigner` работают так же, как их аналоги на JavaScript в предыдущем разделе, причем последняя функция заимстована из конракта `ReceiverPays`.
+
+EN
+Only the payment channel recipient can call the `close` function, who naturally passes the most recent payment message because that message carries the highest total owed. If the sender were allowed to call this function, they could provide a message with a lower amount and cheat the recipient out of what they are owed.
+
+RU
+Только получатель платежного канала может вызвать функцию `close`, которая, естественно, передает самое последнее сообщение о платеже, поскольку в этом сообщении содержится наибольшая сумма задолжности. Если бы отправителю было разрешено вызвать эту функцию, он мог бы передать сообщение с меньшей суммой и обмануть получателя на сумму долга.
+
+EN
+The function verifies the signed message matches the given parameters. If everything checks out, the recipient is sent their portion of the Ether, and the sender is sent the rest via a `selfdestruct`. You can see the `close` function in the full contract.
+
+RU
+Функция проверяет соответствие подписанного сообщения заданным параметрам.Если все подтверждается, получателю отправляется часть Эфира, а отправителю - остаток с помощью `selfdestruct`. Функцию `close` можно посмотреть в полной версии контратка.
+
+### Channel Expiration
+### Истечение срока действия контракта
+
+EN
+Bob can close the payment channel at any time, but if they fail to do so, Alice needs a way to recover her escrowed funds. An expiration time was set at the time of contract deployment. Once that time is reached, Alice can call claimTimeout to recover her funds. You can see the claimTimeout function in the full contract.
+
+RU
+Боб может закрыть платежный канал в любое время, но если он этого не сделает, Алисе нужен способ вернуть свои депонированные средства. Во время развертывания контракта было установлено время истечения срока действия. По истечении этого времени Алиса может вызвать функцию `claimTimeout`, чтобы вернуть свои средства. Вы можете посмотреть функцию `claimTimeout` в полной версии контракта.
+
+EN
+After this function is called, Bob can no longer receive any Ether, so it is important that Bob closes the channel before the expiration is reached.
+
+RU
+После вызова этой функции Алисой, Боб больше не сможет получить Эфир, поэтому важно, чтобы Боб закрыл канал до истечения срока действия. 
+
+Полная версия контракт
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.7.0 <0.9.0;
+// Это выдаст предупреждение из-за устаревшего `selfdestruct`
+contract SimplePaymentChannel {
+    address payable public sender;      // Аккаунт, отправлющий платежи.
+    address payable public recipient;   // Аккаунт, получающий платежи.
+    uint256 public expiration; // Таймаут на случай, если получатель так и не закроется.
+
+    constructor (address payable recipientAddress, uint256 duration)
+        payable
+    {
+        sender = payable(msg.sender);
+        recipient = recipientAddress;
+        expiration = block.timestamp + duration;
+    }
+
+    /// получатель может закрыть канал в любое время, предъявив
+    /// подписанную сумму полученную от отправителя.  Получателю будет отправлена эта сумма,
+    /// и остаток вернется обратно отправителю.
+    function close(uint256 amount, bytes memory signature) external {
+        require(msg.sender == recipient);
+        require(isValidSignature(amount, signature));
+
+        recipient.transfer(amount);
+        selfdestruct(sender);
+    }
+
+    /// отправитель может продлить срок действия в любое время
+    function extend(uint256 newExpiration) external {
+        require(msg.sender == sender);
+        require(newExpiration > expiration);
+
+        expiration = newExpiration;
+    }
+
+    /// если тайм-аут достигнут без закрытия кнала получателем,
+    /// то Эфир возвращается обратно отправителю.
+    function claimTimeout() external {
+        require(block.timestamp >= expiration);
+        selfdestruct(sender);
+    }
+
+    function isValidSignature(uint256 amount, bytes memory signature)
+        internal
+        view
+        returns (bool)
+    {
+        bytes32 message = prefixed(keccak256(abi.encodePacked(this, amount)));
+
+        // проверяем, что подпись принадлежит отправителю платежа
+        return recoverSigner(message, signature) == sender;
+    }
+
+    /// Все следующие функции взяты и главы `Создание и проверка подписей`
+
+    function splitSignature(bytes memory sig)
+        internal
+        pure
+        returns (uint8 v, bytes32 r, bytes32 s)
+    {
+        require(sig.length == 65);
+
+        assembly {
+            // первый 32 байта, после префикса длины
+            r := mload(add(sig, 32))
+            // вторые 32 байта
+            s := mload(add(sig, 64))
+            // последний байт (первый байт от следующих 32 байтов)
+            v := byte(0, mload(add(sig, 96)))
+        }
+
+        return (v, r, s);
+    }
+
+    function recoverSigner(bytes32 message, bytes memory sig)
+        internal
+        pure
+        returns (address)
+    {
+        (uint8 v, bytes32 r, bytes32 s) = splitSignature(sig);
+
+        return ecrecover(message, v, r, s);
+    }
+
+    /// формируем префиксный хэш, чтобы имитировать поведение eth_sign.
+    function prefixed(bytes32 hash) internal pure returns (bytes32) {
+        return keccak256(abi.encodePacked("\x19Ethereum Signed Message:\n32", hash));
+    }
+}
+```
+
+EN
+Note
+The function splitSignature does not use all security checks. A real implementation should use a more rigorously tested library, such as openzepplin’s version of this code.
+
+> <c>ℹ️ Примечание</c>
+___
+Функция `splitSignature` не использует все проверки безопасности. Реальная реализация должна больше использовать какую-нибудь тщательно протестированную библиотеку, такую как, например, openzepplin в частности [версию](https://github.com/OpenZeppelin/openzeppelin-contracts/blob/master/contracts/utils/cryptography/ECDSA.sol) этого кода.
+___
+
+### Verifying Payments
+### Проверка платежей
+
+EN
+Unlike in the previous section, messages in a payment channel aren’t redeemed right away. The recipient keeps track of the latest message and redeems it when it’s time to close the payment channel. This means it’s critical that the recipient perform their own verification of each message. Otherwise there is no guarantee that the recipient will be able to get paid in the end.
+
+RU
+В отличие от предыдущего раздела, сообщения в платежном канале не погашаются сразу. Получать отслеживает последнее сообщение и обменивает его, когда подходит время закрывать платежный канал. Это означает, что очень важно, чтобы получатель самостоятельно проверял каждое сообщение. В противном случает нет никакой гарантии, что получатель сможет в итоге получить деньги.
+
+EN
+The recipient should verify each message using the following process:
+1 Verify that the contract address in the message matches the payment channel.
+2 Verify that the new total is the expected amount.
+3 Verify that the new total does not exceed the amount of Ether escrowed.
+4 Verify that the signature is valid and comes from the payment channel sender.
+
+RU
+Получатель должен проверять каждое сообщение следующим образом:
+1 Убедиться, что адрес контракта в полученном сообщении соответствует каналу оплаты.
+2 Убедиться, что новая общая сумма в сообщении соответствует ожидаемой сумме.
+3 Убедиться, что новая общая сумма не превышает сумму депонированных Эфиров.
+4 Убедиться, что подпись действительна и пришла от отправителя платежного канала.
+
+EN
+We’ll use the ethereumjs-util library to write this verification. The final step can be done a number of ways, and we use JavaScript. The following code borrows the constructPaymentMessage function from the signing JavaScript code above:
+
+RU
+Для написаний это проверки мы будем использовать библиотеку `ethereumjs-util`. Последний шаг может быть выполнен несколькими способами, и мы будем использовать JavaScript. Следующий код заимствует функцию `constructPaymentMessage` из JavaScript-кода подписи(?), приведенного выше:
+
+```javascript
+// this mimics the prefixing behavior of the eth_sign JSON-RPC method.
+// это имитирует поведение префиксации (?) метода eth_sign JSON-RPC.
+function prefixed(hash) {
+    return ethereumjs.ABI.soliditySHA3(
+        ["string", "bytes32"],
+        ["\x19Ethereum Signed Message:\n32", hash]
+    );
+}
+
+function recoverSigner(message, signature) {
+    var split = ethereumjs.Util.fromRpcSig(signature);
+    var publicKey = ethereumjs.Util.ecrecover(message, split.v, split.r, split.s);
+    var signer = ethereumjs.Util.pubToAddress(publicKey).toString("hex");
+    return signer;
+}
+
+function isValidSignature(contractAddress, amount, signature, expectedSigner) {
+    var message = prefixed(constructPaymentMessage(contractAddress, amount));
+    var signer = recoverSigner(message, signature);
+    return signer.toLowerCase() ==
+        ethereumjs.Util.stripHexPrefix(expectedSigner).toLowerCase();
 }
 ```

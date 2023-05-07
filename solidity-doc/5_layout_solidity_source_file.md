@@ -92,3 +92,86 @@ RU
 ___
 Использование директивы для указания версии не изменяет версию компилятора. Она также не включает и не отклаючает функции компилятора. Она просто указывает компилятору проверить, совпадает ли его версия с версией, требуемой `pragma`. Если версия не совпадает, компилятор выдает ошибку.
 ___
+
+### ABI Coder Pragma
+### Директива ABI Кодер (?)
+
+> abi (application binary interface) двоичный (бинарный) интерфейс приложений
+
+EN
+By using pragma abicoder v1 or pragma abicoder v2 you can select between the two implementations of the ABI encoder and decoder.
+
+RU
+Используя `pragma abicoder v1` или `pragma abicoder v2`, мы можете выбирать между двумя реализациями кодера и декодера ABI.
+
+>Кодер — одна из двух компонент кодека (пары кодер — декодер)
+
+EN
+The new ABI coder (v2) is able to encode and decode arbitrarily nested arrays and structs. Apart from supporting more types, it involves more extensive validation and safety checks, which may result in higher gas costs, but also heightened security. It is considered non-experimental as of Solidity 0.6.0 and it is enabled by default starting with Solidity 0.8.0. The old ABI coder can still be selected using pragma abicoder v1;.
+
+RU
+Новый ABI-кодер (v2) способен кодировать и декодировать массивы любой глубины вложенности и структуры. Помимо поддержки большого количества типов, он включает в себя больее широкие возможнсти проверки валидности и безопасности, что может привести к увеличению стоимости газа, но также и к повышению безопасности. Начиная с Solidity 0.6.0 он считается неэкспериментированным, а начинаю с Solidity 0.8.0 он включен по умолчанию. Старый ABI-кодер все еще может быть выбран с помощью `pragma abicoder v1;`.
+
+EN
+The set of types supported by the new encoder is a strict superset of the ones supported by the old one. Contracts that use it can interact with ones that do not without limitations. The reverse is possible only as long as the non-abicoder v2 contract does not try to make calls that would require decoding types only supported by the new encoder. The compiler can detect this and will issue an error. Simply enabling abicoder v2 for your contract is enough to make the error go away.
+
+RU
+Набор типов, поддерживаемых новым кодером, является строгим надмножеством типов, поддерживаемых старым кодером. | Контракты, которые используют новый кодировщик, могут взаимодействовать с такими (?)(типами) со своими ограничениями. Обратное взаимодействие возможно только до тех пор, пока контракт, не использующий `abicoder v2`, не попытается сделать вызовы, требующие декодирования типов, поддерживаемых только новым кодировщиком. Компилятор может обнаружить это и дывать ошибку. Простого включения `abicoder v2` для вашего контракта будет достаточно, чтобы ошибки исчезли.
+
+EN
+Note
+
+This pragma applies to all the code defined in the file where it is activated, regardless of where that code ends up eventually. This means that a contract whose source file is selected to compile with ABI coder v1 can still contain code that uses the new encoder by inheriting it from another contract. This is allowed if the new types are only used internally and not in external function signatures.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Эта директива применяется ко всему коду, определенному в файле, где она активирована, независимо от того, где этот код в итоге может использоваться. Это означает, что контракт, чей исходный файл
+выбран для компиляции с ABI coder v1, все еще может содежрать код, использующий новый кодер, наследуя его от другого контракта. Это допустимо, если новые типы используются только внутри, а не во внешних сигнатурах функций.
+
+>Сигнатура метода — это имя метода плюс параметры (причем порядок параметров имеет значение). В сигнатуру метода не входит возвращаемое значение, а также бросаемые им исключения. Весь код, который описывает метод, называется объявлением метода.
+___
+
+EN
+Note
+
+Up to Solidity 0.7.4, it was possible to select the ABI coder v2 by using pragma experimental ABIEncoderV2, but it was not possible to explicitly select coder v1 because it was the default.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+До версии Solidity 0.7.4 можно было выбрать ABI-кодер v2 с помощью `pragma experimental ABIEncoderV2`, но нельзя было явно выбрать кодер v1, поскольку он использовался по умолчанию.
+___
+
+### Experimental Pragma
+### Экспериментальная Pragma
+
+EN
+The second pragma is the experimental pragma. It can be used to enable features of the compiler or language that are not yet enabled by default. The following experimental pragmas are currently supported:
+
+RU
+Вторая `pragma` - экспериментальная. Она может быть использована, чтобы задействовать возможности компилятора или языка, которые не включены по умолчанию. В настоящее время поддерживаются следующие экспериментальные `pragmas`:
+
+### ABIEncoderV2
+### ABIEncoderV2
+
+EN
+Because the ABI coder v2 is not considered experimental anymore, it can be selected via pragma abicoder v2 (please see above) since Solidity 0.7.4.
+
+RU
+Поскольку ABI coder v2 больше не считается экспериментальным, его можно выбрать указав `pragma abicoder v2;` (см. выше), начиная с версии Solidity 0.7.4.
+
+### SMTChecker
+### SMTChecker
+
+EN
+This component has to be enabled when the Solidity compiler is built and therefore it is not available in all Solidity binaries. The build instructions explain how to activate this option. It is activated for the Ubuntu PPA releases in most versions, but not for the Docker images, Windows binaries or the statically-built Linux binaries. It can be activated for solc-js via the smtCallback if you have an SMT solver installed locally and run solc-js via node (not via the browser).
+
+RU
+Этот компонент должен быть включен при сборке компилятора Solidity, поэтому он доступен не во всех двоичных файлах Solidity. В инструкции по сборке объясняется, как активировать эту опцию. Он активировать в большенстве версий для релизов Ubuntu PPA, но не для образов Docker, двоичных файлов Windows или статически собранных двоичных файлов Linux. Его можно активировать для `solc-js` через `smtCallback`, если у вас локально установлен SMT и вы запускаете `solc-js` через `node`(не через браузер).
+
+EN
+If you use pragma experimental SMTChecker;, then you get additional safety warnings which are obtained by querying an SMT solver. The component does not yet support all features of the Solidity language and likely outputs many warnings. In case it reports unsupported features, the analysis may not be fully sound.
+
+RU
+Если вы используете `pragma experimental SMTChecker;`, то вы получите дополнительные предупреждения о безопасности, которые приходят при запросе к SMT solver. Данный компонент еще не поддерживает все возможнсоти языка Solidity и, вероятно, выодить много предупреждений. В случае, если он сообщает о неподдреживаемых возможностях, анализ может быть не совсем корректным.

@@ -45,3 +45,50 @@ RU
 Комментарий распознается компилятором в любом местое файла на файловом уровне, но рекомендуется размещать его в начале файла.
 
 Больше информации о том как использовать идентификаторы лицензий SPDX можно найти на сайте SPDX.
+
+### Pragmas
+### Директива `Pragma`/псевдокомментарий
+### Директивы
+
+EN
+The pragma keyword is used to enable certain compiler features or checks. A pragma directive is always local to a source file, so you have to add the pragma to all your files if you want to enable it in your whole project. If you import another file, the pragma from that file does not automatically apply to the importing file.
+
+RU
+Ключевое слово `pragma` используется для того, чтобы задействовать определенные функции компилятора или провероки. Директива `pragma` всегда локальна для исходного файла, поэтому вы должны добавить `pragma` во все свои файлы, если хотите включить ее во всем проекте. Если вы импортируете другой файл, то `pragma` из этого файла не будет автоматически применяться к файлу который импортирует.
+
+### Version Pragma
+### Директива версии Solidity
+
+EN
+Source files can (and should) be annotated with a version pragma to reject compilation with future compiler versions that might introduce incompatible changes. We try to keep these to an absolute minimum and introduce them in a way that changes in semantics also require changes in the syntax, but this is not always possible. Because of this, it is always a good idea to read through the changelog at least for releases that contain breaking changes. These releases always have versions of the form 0.x.0 or x.0.0.
+
+
+RU
+Исходные файлы могут(и должны) быть снабжены директивой версии Solidity, чтобы запретить компиляцию с последующими версиями компилятора, которые могут внести несовместимые изменения. Мы стараемся свести их к абсолютному минимуму и вводить их таким образом, чтобы семантические изменения требовали также изменения в синтаксисе, но это не всегда возможно. Поэтому всегда полезно прочесть журнал изменений хотя бы тех релизом, которые содержать критические/серьезные изменения. Эти релизы всегда именю версии вида 0.x.0 или x.0.0.
+
+EN
+The version pragma is used as follows: pragma solidity ^0.5.2;
+
+A source file with the line above does not compile with a compiler earlier than version 0.5.2, and it also does not work on a compiler starting from version 0.6.0 (this second condition is added by using ^). Because there will be no breaking changes until version 0.6.0, you can be sure that your code compiles the way you intended. The exact version of the compiler is not fixed, so that bugfix releases are still possible.
+
+RU
+Директива указания версии Solidity используется следующим образом: `pragma solidity ^0.5.2`;
+
+Исходный файл в котором будет вышеуказанная строка, не cкомпилируется компилятором более ранней версии, чем 0.5.2, а также не работает на компиляторе, начиная с версии 0.6.0(такое второе условие добавляется с помощью `^`). Поскольку до версии 0.6.0 не будет никаких значительных изменений приводящих к некорректной работе, вы можете быть уверены, что ваш код компилируется так, как вы это задумали.  |Точная версия компилятора не фиксируется, так что выпуски с исправленными ошибками все еще возможны.(?)
+
+EN
+It is possible to specify more complex rules for the compiler version, these follow the same syntax used by npm.
+
+RU
+Можно указать более сложные правила для определенной версии компилятора, которые повторяют тот же синтаксис, что и `npm`.
+
+**Note**
+
+EN
+Using the version pragma does not change the version of the compiler. It also does not enable or disable features of the compiler. It just instructs the compiler to check whether its version matches the one required by the pragma. If it does not match, the compiler issues an error.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Использование директивы для указания версии не изменяет версию компилятора. Она также не включает и не отклаючает функции компилятора. Она просто указывает компилятору проверить, совпадает ли его версия с версией, требуемой `pragma`. Если версия не совпадает, компилятор выдает ошибку.
+___

@@ -175,3 +175,72 @@ If you use pragma experimental SMTChecker;, then you get additional safety warni
 
 RU
 Если вы используете `pragma experimental SMTChecker;`, то вы получите дополнительные предупреждения о безопасности, которые приходят при запросе к SMT solver. Данный компонент еще не поддерживает все возможнсоти языка Solidity и, вероятно, выодить много предупреждений. В случае, если он сообщает о неподдреживаемых возможностях, анализ может быть не совсем корректным.
+
+## Importing other Source Files
+## Импорт других исходных файлов
+
+### Syntax and Semantics
+### Синтаксис и семантика
+
+> Семантика языка - это смысловое значение слов. В программировании - начальное смысловое значение операторов, основных конструкций языка и т.п. \
+> Первый код:  i=0; while(i<5){i++;} \
+> Второй код: i=0; do{i++;} while(i<=4);\
+> Логически эти два фрагмента кода выполняют одно и то же, результаты их работы идентичны. В то же время семантически это два разных цикла.
+>(https://ru.wikipedia.org/wiki/%D0%A1%D0%B5%D0%BC%D0%B0%D0%BD%D1%82%D0%B8%D0%BA%D0%B0_(%D0%BF%D1%80%D0%BE%D0%B3%D1%80%D0%B0%D0%BC%D0%BC%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D0%B8%D0%B5))
+
+EN
+Solidity supports import statements to help modularise your code that are similar to those available in JavaScript (from ES6 on). However, Solidity does not support the concept of a default export.
+
+RU
+Solidity поддерживает операторы ипорта, помогающие вашему коду иметь модульную структуру(делают ваш код модульным), аналогичные тем, которые доступны в JavaScript (начиная с ES6). Однако, Solidity не поддерживает концепцию экспорта по умолчанию.
+
+EN
+At a global level, you can use import statements of the following form: `import "filename";`
+
+RU
+На глобальном уровне, вы можете использовать операторы импорта следующего вида:
+```java 
+import "filename";
+```
+
+EN
+The filename part is called an import path. This statement imports all global symbols from “filename” (and symbols imported there) into the current global scope (different than in ES6 but backwards-compatible for Solidity). This form is not recommended for use, because it unpredictably pollutes the namespace. If you add new top-level items inside “filename”, they automatically appear in all files that import like this from “filename”. It is better to import specific symbols explicitly.
+
+RU
+Часть `filename` называется путем импорта(т.е. откуда импортируется и какой файл). Оператор `import` импортирует все глобальные идентификаторы из `filename` (также импортированные туда идентификаторы) в текущую глобальную область видимости (иначе, чем в ES6, но обратно совместимо с Solidity). Такой способ не рекоменндуется к использованию, поскольку он непредсказуемо "загрязняет" пространство имен. Если вы добавляете новые элементы верхнего уровня внутри "filename", они автоматически появляются во всех файлах, которые импортируют таким же образом "filename". Лучше импортировать конкретные идентификаторы явным образом.
+
+>"Идентификаторы" или "символы" — это имена, задаваемые в программе для переменных, типов, функций и меток. Написание и регистр символов в именах идентификаторов должны отличаться от всех ключевых слов. Не допускается использовать ключевые слова (C или Microsoft) в качестве идентификаторов; они зарезервированы для специального применения.
+>(https://docs.microsoft.com/ru-ru/cpp/c-language/c-identifiers?view=msvc-160#:~:text=%D0%98%D0%B4%D0%B5%D0%BD%D1%82%D0%B8%D1%84%D0%B8%D0%BA%D0%B0%D1%82%D0%BE%D1%80%D1%8B%22%20%D0%B8%D0%BB%D0%B8%20%22%D1%81%D0%B8%D0%BC%D0%B2%D0%BE%D0%BB%D1%8B%22%20%E2%80%94%20%D1%8D%D1%82%D0%BE,%D0%BE%D0%BD%D0%B8%20%D0%B7%D0%B0%D1%80%D0%B5%D0%B7%D0%B5%D1%80%D0%B2%D0%B8%D1%80%D0%BE%D0%B2%D0%B0%D0%BD%D1%8B%20%D0%B4%D0%BB%D1%8F%20%D1%81%D0%BF%D0%B5%D1%86%D0%B8%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B3%D0%BE%20%D0%BF%D1%80%D0%B8%D0%BC%D0%B5%D0%BD%D0%B5%D0%BD%D0%B8%D1%8F)
+
+EN
+The following example creates a new global symbol symbolName whose members are all the global symbols from "filename":`import * as symbolName from "filename";`
+which results in all global symbols being available in the format symbolName.symbol.
+
+RU
+Следующий пример создает новый глобальный идентификатор `symbolName`, членами которого являются все глобальные идентификаторы из "filename":
+```java
+import * as symbolName from "filename";
+```
+в результате чего все глобальные идентификаторы из "filename" будут доступны в формате: `symbolName.symbol`.
+
+EN
+A variant of this syntax that is not part of ES6, but possibly useful is:
+`import "filename" as symbolName;`
+which is equivalent to import * as symbolName from "filename";.
+
+RU
+Еще один вариант синтаксиса, который не поддерживается в ES6, но может быть вам полезен:
+```java
+import "filename" as symbolName;
+```
+что эквивалентно `import * as symbolNames from "filename";`.
+
+EN
+If there is a naming collision, you can rename symbols while importing. For example, the code below creates new global symbols alias and symbol2 which reference symbol1 and symbol2 from inside "filename", respectively.
+`import {symbol1 as alias, symbol2} from "filename";`
+
+RU
+При конфликте имен, можно переименовывать идентификаторы при импортировании. Например, приведенный ниже код создает новые глобальные идентификаторы `alias` и `symbol2` из "filename" соответственно.
+```java
+import {symbol1 as alias, symbol2} from "filename";
+```

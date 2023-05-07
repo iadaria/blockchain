@@ -244,3 +244,25 @@ RU
 ```java
 import {symbol1 as alias, symbol2} from "filename";
 ```
+### Import Paths
+### Пути импорта (?)
+
+EN
+In order to be able to support reproducible builds on all platforms, the Solidity compiler has to abstract away the details of the filesystem where source files are stored. For this reason import paths do not refer directly to files in the host filesystem. Instead the compiler maintains an internal database (virtual filesystem or VFS for short) where each source unit is assigned a unique source unit name which is an opaque and unstructured identifier. The import path specified in an import statement is translated into a source unit name and used to find the corresponding source unit in this database.
+
+RU
+Для того, чтобы иметь возможность реализовывать **воспроизводимые сборки**(см. определение ниже) на разных платформах, компилятор Solidity должен абстрагироваться от деталей реализации файловой сестемы, используемой для хранения исходных файлов. По этой причине указываемые пути для импорта файлов не ссылаются непосредственно на сами файлы в файловой системе, |носителя(диск), где они непосредственно храняться(?). Вместо этого компилятор ведет внутреннюю базу данных (виртуальную файловую систему, сокращенно VFS), где каждому (исходному блоку/блоку данных) присваивается уникальное имя, которое является бесмыссленым и произвольным идентификатором. Путь для импорта файла, указанный с оператором `import`, преобразуется в имя блока данных и используется для поиска соответствующего блока данных в этой базе данных.
+
+>**Сборка называется воспроизводимой**, если в результате её из одних и тех же исходников в одинаковом сборочном окружении и при одинаковых инструкциях к сборке получается идентичный результат. Воспроизводимость сборки является необходимым условием для доказательства того, что имеющееся скомпилированное программное обеспечение действительно получено из заявленных исходных кодов.
+>(https://lvee.org/en/abstracts/272#:~:text=%D0%A1%D0%B1%D0%BE%D1%80%D0%BA%D0%B0%20%D0%BD%D0%B0%D0%B7%D1%8B%D0%B2%D0%B0%D0%B5%D1%82%D1%81%D1%8F%20%D0%B2%D0%BE%D1%81%D0%BF%D1%80%D0%BE%D0%B8%D0%B7%D0%B2%D0%BE%D0%B4%D0%B8%D0%BC%D0%BE%D0%B9%5B%23rb%5D%2C%20%D0%B5%D1%81%D0%BB%D0%B8%20%D0%B2,%D0%BF%D0%BE%D0%BB%D1%83%D1%87%D0%B5%D0%BD%D0%BE%20%D0%B8%D0%B7%20%D0%B7%D0%B0%D1%8F%D0%B2%D0%BB%D0%B5%D0%BD%D0%BD%D1%8B%D1%85%20%D0%B8%D1%81%D1%85%D0%BE%D0%B4%D0%BD%D1%8B%D1%85%20%D0%BA%D0%BE%D0%B4%D0%BE%D0%B2)\
+>(https://translated.turbopages.org/proxy_u/en-ru.ru.9fecfae1-6457b41e-fc89728c-74722d776562/https/en.wikipedia.org/wiki/Reproducible_builds)
+
+EN
+Using the Standard JSON API it is possible to directly provide the names and content of all the source files as a part of the compiler input. In this case source unit names are truly arbitrary. If, however, you want the compiler to automatically find and load source code into the VFS, your source unit names need to be structured in a way that makes it possible for an import callback to locate them. When using the command-line compiler the default import callback supports only loading source code from the host filesystem, which means that your source unit names must be paths. Some environments provide custom callbacks that are more versatile. For example the Remix IDE provides one that lets you import files from HTTP, IPFS and Swarm URLs or refer directly to packages in NPM registry.
+
+RU
+
+EN
+For a complete description of the virtual filesystem and the path resolution logic used by the compiler see Path Resolution.
+
+RU

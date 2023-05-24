@@ -269,3 +269,40 @@ For a complete description of the virtual filesystem and the path resolution log
 
 RU
 Полное описание виртуальной файловой системы и логики разрешения путей, используемой компилятором, приведено в разеделе Разрешения путей.
+
+### Comments
+### Комментарии
+
+EN
+Single-line comments (//) and multi-line comments (/*...*/) are possible.
+
+RU
+Возможны однострочные комментраии (//) и многострочные комментарии(/*...*/)
+```java
+// Это однострочный комментарий.
+
+/*
+Это
+многосточный комментарий.
+*/
+```
+
+Note
+
+EN
+A single-line comment is terminated by any unicode line terminator (LF, VF, FF, CR, NEL, LS or PS) in UTF-8 encoding. The terminator is still part of the source code after the comment, so if it is not an ASCII symbol (these are NEL, LS and PS), it will lead to a parser error.
+
+Additionally, there is another type of comment called a NatSpec comment, which is detailed in the style guide. They are written with a triple slash (///) or a double asterisk block (/** ... */) and they should be used directly above function declarations or statements.
+
+RU
+
+> <c>ℹ️ Примечание</c>
+___
+Однострочные комментарии завершаются любым юникодным признаком конца строки т.е. управляющими символами (LF, VF, FF, CR, NEL, LS или PS) в кодировке UTF-8. Специальный символ(признак конца строки) остается частью исходного кода после комментария, поэтому если он не является ASCII символом (это NEL, LS и PS), то это приведет к ошибке при синтаксическом анализе.
+
+Кроме того, существует еще один тип комментариев, называемый NatSpec comment, который подробно описан в руководстве по стилю. Они записываются через тройную косую четру (///) или двойной блок звездочек (//**...*/) и должны использоваться непосредственно над объявлениями функций или утверждениями.
+
+Признак конца строки:
+CR - возврат каретки,
+LF - подача на строку.
+___

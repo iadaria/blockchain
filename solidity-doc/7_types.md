@@ -151,4 +151,97 @@ RU
 > <c>ℹ️ Примечание</c>
 ___
 Проверка на переполнение никогда не выполняется для операций сдвига, как это делается для арифметических операций. Вместо этого результат всегда усекается.
+___ 
+
+### Addition, Subtraction and Multiplication
+### Сложение, вычитание и умножение
+
+EN
+Addition, subtraction and multiplication have the usual semantics, with two different modes in regard to over- and underflow:
+
+- By default, all arithmetic is checked for under- or overflow, but this can be disabled using the unchecked block, resulting in wrapping arithmetic. More details can be found in that section.
+
+- The expression -x is equivalent to (T(0) - x) where T is the type of x. It can only be applied to signed types. The value of -x can be positive if x is negative. There is another caveat also resulting from two’s complement representation:
+If you have int x = type(int).min;, then -x does not fit the positive range. This means that unchecked { assert(-x == x); } works, and the expression -x when used in checked mode will result in a failing assertion.
+
+RU
+Сложение, вычитание и умножение имеют обычную семантику/смысл, с двумя различными режимами в отношении переполнения и недозаполнения(?):
+- По умолчанию все арифметические действия проверяются на недо- и переполнение, но это можно отключить с помощью блока `unchecked`, в результате чего арифметические вычисления будут обернуты. Более подробную информацию можно найти в этом(?) разделе.
+- Выражение `-x` эквивалентно `(T(0) - x)` где `T` - тип `x`. Оно может применятся только к знаковым типам. Значение `-x` может положительным, если `x` отрицательно. Существует еще одна оговорка, также вытекающая из двоичного представления(?):
+Если у вас `int x = type(int).min;`, то `-x` не входит в положительный диапазон. Это означает, что `unchecked { assert(-x == x); } работает, и выражение `-x` при использовании в проверенном режиме приведет к неудачному утверждению.
+
+### Division
+### Деление
+
+EN
+Since the type of the result of an operation is always the type of one of the operands, division on integers always results in an integer. In Solidity, division rounds towards zero. This means that int256(-5) / int256(2) == int256(-2).
+
+Note that in contrast, division on literals results in fractional values of arbitrary precision.
+
+RU
+Поскольку тип результата операции всегда равен типу одного из операндов, при делении на целые числа всегда получается целое число. В Solidity деление округляется в сторону нуля. Это означает, что `int256(-5) / int256(2) == int256(-2)`.
+
+Обратите внимание, что в отличие от этого, деление на литералы дает дробные значения произвольной точности.
+
+EN
+Note
+Division by zero causes a Panic error. This check can not be disabled through unchecked { ... }.
+
+RU
+> <c>ℹ️ Примечание</c>
 ___
+Деление на ноль вызывает ошибку `Panic`. Эта проверка не может быть отключена с помощью блока `unchecked {...}`.
+___
+
+EN
+Note
+The expression type(int).min / (-1) is the only case where division causes an overflow. In checked arithmetic mode, this will cause a failing assertion, while in wrapping mode, the value will be type(int).min.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Выражение `type(int).min / (-1)` - единственный случай, когда деление вызывает переполнение. В режиме `checked` арифметический действий, это приведет к неудачному утверждению, а в режиме `wrapping`, значение будет `type(int).min`.
+___
+
+### Modulo
+### Операция деление по модулю %
+
+EN
+The modulo operation a % n yields the remainder r after the division of the operand a by the operand n, where q = int(a / n) and r = a - (n * q). This means that modulo results in the same sign as its left operand (or zero) and a % n == -(-a % n) holds for negative a:
+
+- int256(5) % int256(2) == int256(1)
+- int256(5) % int256(-2) == int256(1)
+- int256(-5) % int256(2) == int256(-1)
+- int256(-5) % int256(-2) == int256(-1)
+
+Note
+Modulo with zero causes a Panic error. This check can not be disabled through unchecked { ... }.
+
+RU
+Операция деления по модулю `a % n` дает остаток `r` после деления операнда `a` на операнд `n`, где `q = int(a/n)` и `r = a - (n * q)`. Это означает, что при делении по модулю получается результат с тем же знаком, что и его левый операнд(или ноль), а для отрицательного `a` справедливо `a % n == -(-a % n)`:
+
+- int256(5) % int256(2) == int256(1)
+- int256(5) % int256(-2) == int256(1)
+- int256(-5) % int256(2) == int256(-1)
+- int256(-5) % int256(-2) == int256(-1)
+
+> <c>ℹ️ Примечание</c>
+___
+Деление по модулю на ноль вызывает ошибку `Panic`. Эта проверка не может быть отключена с помощью блока `unchecked {...}`.
+___
+
+### Exponentiation
+###
+
+EN
+Exponentiation is only available for unsigned types in the exponent. The resulting type of an exponentiation is always equal to the type of the base. Please take care that it is large enough to hold the result and prepare for potential assertion failures or wrapping behaviour.
+
+Note
+
+In checked mode, exponentiation only uses the comparatively cheap exp opcode for small bases. For the cases of x**3, the expression x*x*x might be cheaper. In any case, gas cost tests and the use of the optimizer are advisable.
+
+Note
+
+Note that 0**0 is defined by the EVM as 1.
+
+RU

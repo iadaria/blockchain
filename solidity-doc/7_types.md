@@ -1,3 +1,5 @@
+v0.8.20
+
 ## Types
 ## Типы
 
@@ -257,4 +259,40 @@ RU
 > <c>ℹ️ Примечание</c>
 ___
 Обратите внимание, что `0**0` определяется EVM как 1.
+___
+
+### Fixed Point Numbers
+### Числа с фиксированной точкой(запятой)
+
+EN
+Warning
+Fixed point numbers are not fully supported by Solidity yet. They can be declared, but cannot be assigned to or from.
+
+fixed / ufixed: Signed and unsigned fixed point number of various sizes. Keywords ufixedMxN and fixedMxN, where M represents the number of bits taken by the type and N represents how many decimal points are available. M must be divisible by 8 and goes from 8 to 256 bits. N must be between 0 and 80, inclusive. ufixed and fixed are aliases for ufixed128x18 and fixed128x18, respectively.
+
+Operators:
+
+- Comparisons: <=, <, ==, !=, >=, > (evaluate to bool)
+- Arithmetic operators: +, -, unary -, *, /, % (modulo)
+
+RU
+> <o>⚠️ Предупреждение </o>
+___
+Числа с фиксированной точкой еще не полностью поддерживаются Solidity. Они могут быть объявлены, но не могут присваиваться или извлекаться.
+___
+
+`fixed` / `ufixed`: знаковое и беззнаковое число с фиксированной точкой различных (типо)размеров. Ключевые слова `ufixedMxN` и `fixedMxN`, где `M` представляет количество бит, занимаемых типом, а `N` - количество десятичных точек. `M` должно быть крантно 8 и представляет собой число от 8 до 256 бит. `N` должно быть числом от 0 до 80 включительно. `ufixed` `fixed` псевдонимами для `ufixed128x18` и `fixed128x18`, соответственно.
+
+Операторы:
+- Сравнения: `<=`, `<`, `==`, `!=`, `>=`, `>` (возвращается тип bool)
+- Арифметические операторы: `+`, `-`, унарный `-`, `*`, `/`, `%` (по модулю).
+
+EN
+Note
+The main difference between floating point (float and double in many languages, more precisely IEEE 754 numbers) and fixed point numbers is that the number of bits used for the integer and the fractional part (the part after the decimal dot) is flexible in the former, while it is strictly defined in the latter. Generally, in floating point almost the entire space is used to represent the number, while only a small number of bits define where the decimal point is.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Основые отличия между числами с плавающей точкой/запятой (float и double во многих языках, точнее, числами IEEE 754) и числами с фиксированной точкой/запятой заключаются в том, что количество байтов, используемых для целой и дробной частей(часть после десятичной точки), в превом случае является гибким, а во втором - строго определенным. Как правило, в числах с плавающей запятой для представления числа используется почти вся область, и только небольше количество байтов, определяет, где находится десятичная точка.
 ___

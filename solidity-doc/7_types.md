@@ -296,3 +296,63 @@ RU
 ___
 Основые отличия между числами с плавающей точкой/запятой (float и double во многих языках, точнее, числами IEEE 754) и числами с фиксированной точкой/запятой заключаются в том, что количество байтов, используемых для целой и дробной частей(часть после десятичной точки), в превом случае является гибким, а во втором - строго определенным. Как правило, в числах с плавающей запятой для представления числа используется почти вся область, и только небольше количество байтов, определяет, где находится десятичная точка.
 ___
+
+### Address
+### Адрес
+
+EN
+The address type comes in two largely identical flavors:
+- address: Holds a 20 byte value (size of an Ethereum address).
+- address payable: Same as address, but with the additional members transfer and send.
+
+RU
+Тип адреса приходит в двух, практически идентичных, вариантах:
+- `address`: Хранит значения размером 20 байт (размер Ethereum адреса).
+- `address payable`: То же, что и `address`, но с дополнительными членами `transfer` и `send`.
+
+EN
+The idea behind this distinction is that address payable is an address you can send Ether to, while you are not supposed to send Ether to a plain address, for example because it might be a smart contract that was not built to accept Ether.
+
+RU
+Идея этого различия заключается в том, что `address payable` - это адрес, на который вы можете отправить Эфир, в то время как вы не должны отправлять Эфир на простой `address`, например, потому что это может быть смарт-контракт, который не был создан для приема Эфира.
+
+EN
+Type conversions:
+- Implicit conversions from address payable to address are allowed, whereas conversions from address to address payable must be explicit via payable(<address>).
+- Explicit conversions to and from address are allowed for uint160, integer literals, bytes20 and contract types.
+
+RU
+Преобразования типов:
+- Неявные преобразования из `address payable` в `address` разрешены, тогда как преобразования из `address` в `address payable` должны быть явными через `payable(<address>)`.
+- Явные преобразования в `address` и из `address` разрешены для `uint160`, целочисленных литералов, `bytes20` и типов контрактов(?).
+
+EN
+Only expressions of type address and contract-type can be converted to the type address payable via the explicit conversion payable(...). For contract-type, this conversion is only allowed if the contract can receive Ether, i.e., the contract either has a receive or a payable fallback function. Note that payable(0) is valid and is an exception to this rule.
+
+RU
+Только выражения типа `address` и тип-контракта(?) могут быть преобразованы к типу `address payable` через явное преобразование `payable(...)`. Для типа контракта это преобразование допустимо только в том случае, если контракт может получать Эфир, т.е. контракт либо имеет функцию получения, либо `payable` функцию возврата.
+
+EN
+Note
+If you need a variable of type address and plan to send Ether to it, then declare its type as address payable to make this requirement visible. Also, try to make this distinction or conversion as early as possible.\
+The distinction between address and address payable was introduced with version 0.5.0. Also starting from that version, contracts are not implicitly convertible to the address type, but can still be explicitly converted to address or to address payable, if they have a receive or payable fallback function.
+
+RU
+> <c>ℹ️ Примечание</c>
+Если вам нужна переменная типа `address` и вы планируете отправлять на нее Эфир, то объявите ее тип как `address payable`, чтобы сделать это требование явным/видимым. Кроме того, постарайте сделать это различие(свойство `payable`) или преобразование как можно раньше.
+
+EN
+Operators:
+- <=, <, ==, !=, >= and >
+
+Warning
+If you convert a type that uses a larger byte size to an address, for example bytes32, then the address is truncated. To reduce conversion ambiguity, starting with version 0.4.24, the compiler will force you to make the truncation explicit in the conversion. Take for example the 32-byte value 0x111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFFCCCC. \
+You can use address(uint160(bytes20(b))), which results in 0x111122223333444455556666777788889999aAaa, or you can use address(uint160(uint256(b))), which results in 0x777788889999AaAAbBbbCcccddDdeeeEfFFfCcCc.
+
+RU
+
+EN
+Note
+Mixed-case hexadecimal numbers conforming to EIP-55 are automatically treated as literals of the address type. See Address Literals.
+
+RU

@@ -231,17 +231,30 @@ ___
 ___
 
 ### Exponentiation
-###
+### Возведение в степень
 
 EN
 Exponentiation is only available for unsigned types in the exponent. The resulting type of an exponentiation is always equal to the type of the base. Please take care that it is large enough to hold the result and prepare for potential assertion failures or wrapping behaviour.
 
-Note
+RU
+Возведение в степень доступно только для беззнаковых типов через экспоненту. Тип результата возведения в степень всегда равен типу основания. Пожалуйста, позаботьтесь о том, чтобы он был достаточно большим для хранения результата, и приготовьтесь к возможным `assertion failures`(ошибкам утверждений) и `wrapping` поведению.
 
+EN
+Note
 In checked mode, exponentiation only uses the comparatively cheap exp opcode for small bases. For the cases of x**3, the expression x*x*x might be cheaper. In any case, gas cost tests and the use of the optimizer are advisable.
 
-Note
+RU
+> <c>ℹ️ Примечание</c>
+___
+В режиме `checked`(проверки), возведение в степень использует сравнительно дешевый код операции `exp`, только для небольших оснований. Для случаев `x**3`, выражение `x*x*x` может быть дешевле. В любом случае, рекомендуется проводить тесты на стоимость газа и использовать оптимизатор.
+___
 
+EN
+Note
 Note that 0**0 is defined by the EVM as 1.
 
 RU
+> <c>ℹ️ Примечание</c>
+___
+Обратите внимание, что `0**0` определяется EVM как 1.
+___

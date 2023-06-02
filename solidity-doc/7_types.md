@@ -330,7 +330,7 @@ EN
 Only expressions of type address and contract-type can be converted to the type address payable via the explicit conversion payable(...). For contract-type, this conversion is only allowed if the contract can receive Ether, i.e., the contract either has a receive or a payable fallback function. Note that payable(0) is valid and is an exception to this rule.
 
 RU
-Только выражения типа `address` и тип-контракта(?) могут быть преобразованы к типу `address payable` через явное преобразование `payable(...)`. Для типа контракта это преобразование допустимо только в том случае, если контракт может получать Эфир, т.е. контракт либо имеет функцию получения, либо `payable` функцию возврата.
+Только выражения типа `address` и тип-контракта(?) могут быть преобразованы к типу `address payable` через явное преобразование `payable(...)`. Для типа контракта это преобразование допустимо только в том случае, если контракт может получать Эфир, т.е. контракт либо имеет функцию получения, либо `payable` функцию возврата. Обратите внимание, что `payable(0)` допустимо и является исключением из этого правила.
 
 EN
 Note
@@ -339,7 +339,11 @@ The distinction between address and address payable was introduced with version 
 
 RU
 > <c>ℹ️ Примечание</c>
+___
 Если вам нужна переменная типа `address` и вы планируете отправлять на нее Эфир, то объявите ее тип как `address payable`, чтобы сделать это требование явным/видимым. Кроме того, постарайте сделать это различие(свойство `payable`) или преобразование как можно раньше.
+
+Различие между `address` и `address payable` было внесено в версии `0.5.0`.Также, начиная с этой версии, контракты неявно не конвертируются в тип `address`,но все еще могут быть конвертированы в тип `address` или `address payable` явно, если у них есть функция обратного получения или оплаты.
+___
 
 EN
 Operators:
@@ -350,9 +354,59 @@ If you convert a type that uses a larger byte size to an address, for example by
 You can use address(uint160(bytes20(b))), which results in 0x111122223333444455556666777788889999aAaa, or you can use address(uint160(uint256(b))), which results in 0x777788889999AaAAbBbbCcccddDdeeeEfFFfCcCc.
 
 RU
+Операторы:
+- `<=`, `<`, `==`, `!=`, `>=` и `>`
+> <o>⚠️ Предупреждение </o>
+___
+Если вы конвертируете тип, который больше в байтах по размеру, например `bytes32`, в `address`, то `address` будет усеченным/неполным. Чтобы уменьшить вероятность неоднозначного преобразования, начиная с версии 0.4.24, компилятор будет заствлять вас явно указывать усечении при преобразовании. Возьмем, например, 32-байтовое значение `0x111122223333444455556666777788889999AAAABBBBCCCCDDDDEEEEFFFFCCCC`.
+
+Вы можете использовать `address(uint160(bytes20(b)))`, что даст результат `0x111122223333444455556666777788889999aAaa`, или вы можете использовать `address(uint160(uint256(b)))` и получить `0x777788889999AaAAbBbbCcccddDdeeeEfFFfCcCc`.
+___
+
 
 EN
 Note
 Mixed-case hexadecimal numbers conforming to EIP-55 are automatically treated as literals of the address type. See Address Literals.
 
 RU
+> <c>ℹ️ Примечание</c>
+___
+Шестнадцатеричные числа в смешанном регистре, соответствующие EIP-55,  автоматически рассматриваются как литералы типа `address`. См. раздел адресные литералы.
+___
+
+### Members of Addresses
+### Составляющие элементы адресов
+
+EN
+For a quick reference of all members of address, see Members of Address Types.
+- `balance` and `transfer`
+
+RU
+Для быстрого ознакомления со всеми элементами адреса, обратитесь к списку 'Элементы `address` типов'
+- `balance` и `transfer`
+
+EN
+It is possible to query the balance of an address using the property balance and to send Ether (in units of wei) to a payable address using the transfer function:
+
+
+RU
+Можно запросить баланс адреса с помощью свойства `balance` и отправить Эфир (в единицах `wei`) на `payable address` с помощью функции `transfer`:
+```java
+address payable x = payable(0x123);
+address myAddress = address(this);
+if (x.balance < 10 && myAddress.balance >= 10) x.transfer(10);
+```
+
+EN
+The `transfer` function fails if the balance of the current contract is not large enough or if the Ether transfer is rejected by the receiving account. The `transfer` function reverts on failure.
+
+RU
+Функция `transfer`(перевода) завершается ошибкой, если балансе текущего контракта недостаточно средств или если `transfer`(перевод) Эфира отклонен принимающим аккаунтом(принимающей стороной).
+
+EN
+Note
+If `x` is a contract address, its code (more specifically: its Receive Ether Function, if present, or otherwise its Fallback Function, if present) will be executed together with the `transfer` call (this is a feature of the EVM and cannot be prevented). If that execution runs out of gas or fails in any way, the Ether transfer will be reverted and the current contract will stop with an exception.
+
+RU
+> <c>ℹ️ Примечание</c>
+Если `x` - это адрес контракта, то его код (точнее: его Функция Получения Эфира, если она есть, или, иначе, его `Fallback Function`(?)Резервная Функция/Функция отката, если она есть ) будет выполнен вместе с вызовом `transfer`(это особенность EVM, и ее нельзя предотвратить). Если в процессе выполнения закончится газ или произойдет какой-либо сбой, передача Эфира будет отменена, а текущий контракт будет остановлен с помощью ошибки/исключения.

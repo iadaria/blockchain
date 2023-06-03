@@ -409,4 +409,98 @@ If `x` is a contract address, its code (more specifically: its Receive Ether Fun
 
 RU
 > <c>ℹ️ Примечание</c>
-Если `x` - это адрес контракта, то его код (точнее: его Функция Получения Эфира, если она есть, или, иначе, его `Fallback Function`(?)Резервная Функция/Функция отката, если она есть ) будет выполнен вместе с вызовом `transfer`(это особенность EVM, и ее нельзя предотвратить). Если в процессе выполнения закончится газ или произойдет какой-либо сбой, передача Эфира будет отменена, а текущий контракт будет остановлен с помощью ошибки/исключения.
+Если `x` - это адрес контракта, то его код (точнее: его Функция Получения Эфира, если она есть, или, иначе, его `Fallback Function`(?)Резервная Функция/Функция отката, если она есть) будет выполнен вместе с вызовом `transfer`(это особенность EVM, и ее нельзя предотвратить(?)). Если в процессе выполнения закончится газ или произойдет какой-либо сбой, передача Эфира будет отменена, а текущий контракт будет остановлен с помощью ошибки-исключения.
+
+- `send`
+
+EN
+`send` is the low-level counterpart of transfer. If the execution fails, the current contract will not stop with an exception, but send will return false.
+
+RU
+`send` - это низко-уровневый аналог `transfer`. При неудачном исходе перевода, текущий контракт не прервется с помощью исключения, а `send` вернет `false`.
+
+EN
+Warning
+There are some dangers in using send: The transfer fails if the call stack depth is at 1024 (this can always be forced by the caller) and it also fails if the recipient runs out of gas. So in order to make safe Ether transfers, always check the return value of send, use transfer or even better: use a pattern where the recipient withdraws the money.
+
+RU
+> <o>⚠️ Предупреждение </o>
+Использование `send` сопряжено с некоторыми рисками: Перевод не пройзойдет, если глубина стека вызовов будет равна 1024 (эта функция(?) всегда можеть быть принудительно выполнена вызывающей стороной), а также если у получателя закончится газ. Поэтому для безопасных переводов Эфира всегда проверяйте возвращаемое `send` значение, используйте `transfer` или даже лучше: используйте паттерн, в котором получатель выводит/забирает деньги.
+
+EN
+- `call`, `delegatecall` and `staticcall`
+
+RU
+- `call`, `delegatecall` и `staticcall`
+
+EN
+In order to interface with contracts that do not adhere to the ABI, or to get more direct control over the encoding, the functions call, delegatecall and staticcall are provided. They all take a single bytes memory parameter and return the success condition (as a bool) and the returned data (bytes memory). The functions abi.encode, abi.encodePacked, abi.encodeWithSelector and abi.encodeWithSignature can be used to encode structured data.
+
+RU
+Для взаимодействия с контрактами, которые не соответствуют/придерживаются ABI (?), или для получения прямого контроля над кодировкой предусмотрены функции `call`, `delegatecall` и `staticcall`. Все они принимают только один параметр типа `bytes memory` и возвращают состояние успешности операции (в виде bool) и данные(типа `bytes memory`). Функция `abi.encode`, `abi.encodePacked`, `abi.encodeWithSelector` и `abi.encodeWithSignature` могут быть использованы для кодирования структурированных данны.
+
+Пример:
+```java
+bytes memory payload = abi.encodeWithSignature("register(string)", "MyName");
+(bool success, bytes memory returnData) = address(nameReg).call(payload);
+require(success);
+```
+
+EN
+Warning
+All these functions are low-level functions and should be used with care. Specifically, any unknown contract might be malicious and if you call it, you hand over control to that contract which could in turn call back into your contract, so be prepared for changes to your state variables when the call returns. The regular way to interact with other contracts is to call a function on a contract object (x.f()).
+
+RU
+> <o>⚠️ Предупреждение </o>
+Все эти функции являются низкоуровневыми и должны использоваться с осторожностью. В частности, любой неизвестный контракт может быть вредоносным, и если вы вызываете его, вы тем самым передаете этому контракту управление, который в свою очередь может вызвать обратно ваш контракт, поэтому будьте готовы к изменениям в ваших переменных состояния после возварата вызова(?). Обычным способом взаимодействия с другими контрактами является вызов функции объекта контракта (`x.f()`).
+
+EN
+Note
+Previous versions of Solidity allowed these functions to receive arbitrary arguments and would also handle a first argument of type bytes4 differently. These edge cases were removed in version 0.5.0.
+
+RU
+> <c>ℹ️ Примечание</c>
+Предыдущие версии Solidity позволяли этим функциям принимать произвольные аргументы, а также по-разному обрабатывали первый аргумент типа `bytes4`. Эти случаи были устранены начиная с версии 0.5.0.
+
+EN
+It is possible to adjust the supplied gas with the gas modifier:
+```java
+address(nameReg).call{gas: 1000000}(abi.encodeWithSignature("register(string)", "MyName"));
+```
+Similarly, the supplied Ether value can be controlled too:
+```java
+address(nameReg).call{value: 1 ether}(abi.encodeWithSignature("register(string)", "MyName"));
+```
+Lastly, these modifiers can be combined. Their order does not matter:
+```java
+address(nameReg).call{gas: 1000000, value: 1 ether}(abi.encodeWithSignature("register(string)", "MyName"));
+```
+
+RU
+
+EN
+In a similar way, the function delegatecall can be used: the difference is that only the code of the given address is used, all other aspects (storage, balance, …) are taken from the current contract. The purpose of delegatecall is to use library code which is stored in another contract. The user has to ensure that the layout of storage in both contracts is suitable for delegatecall to be used.
+
+RU
+Аналогичным образом можно использовать
+
+EN
+Note
+Prior to homestead, only a limited variant called callcode was available that did not provide access to the original msg.sender and msg.value values. This function was removed in version 0.5.0.
+
+RU
+
+EN
+Since byzantium staticcall can be used as well. This is basically the same as call, but will revert if the called function modifies the state in any way.
+
+All three functions call, delegatecall and staticcall are very low-level functions and should only be used as a last resort as they break the type-safety of Solidity.
+
+The gas option is available on all three methods, while the value option is only available on call.
+
+RU
+
+EN
+Note
+It is best to avoid relying on hardcoded gas values in your smart contract code, regardless of whether state is read from or written to, as this can have many pitfalls. Also, access to gas might change in the future.
+
+RU

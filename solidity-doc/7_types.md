@@ -477,18 +477,34 @@ address(nameReg).call{gas: 1000000, value: 1 ether}(abi.encodeWithSignature("reg
 ```
 
 RU
+Можно корректировать подаваемый газ с помощью модификатора газа:
+```java
+address(nameReg).call{gas: 1000000}(abi.encodeWithSignature("register(string)", "MyName"));
+```
+Аналогичным образом можно управлять и значением поставляемого эфира:
+```java
+address(nameReg).call{value: 1 ether}(abi.encodeWithSignature("register(string)", "MyName"));
+```
+Наконец, эти модификаторы можно комбинировать. Их порядок не имеет значения:
+```java
+address(nameReg).call{gas: 1000000, value: 1 ether}(abi.encodeWithSignature("register(string)", "MyName"));
+```
 
 EN
 In a similar way, the function delegatecall can be used: the difference is that only the code of the given address is used, all other aspects (storage, balance, …) are taken from the current contract. The purpose of delegatecall is to use library code which is stored in another contract. The user has to ensure that the layout of storage in both contracts is suitable for delegatecall to be used.
 
 RU
-Аналогичным образом можно использовать
+Аналогичным образом можно использовать функцию `delegatecall`: разница в том, что используется только код заданного адреса, все остальные аспекты(хранение, баланс, ...) берутся из текущего контракта. Назначение `delegatecall` - использовать код библиотеки, который хранится в другом контракте. Пользователь должен убедиться, что расположение хранилищ в обоих контрактах подходит для использования `delegatecall`.
 
 EN
 Note
 Prior to homestead, only a limited variant called callcode was available that did not provide access to the original msg.sender and msg.value values. This function was removed in version 0.5.0.
 
 RU
+> <c>ℹ️ Примечание</c>
+___
+До homestead версии был доступен только ограниченный вариант функции `callcode`, которая не предоставляла доступ к исходным значениям `msg.sender` и `msg.value`. Эта функция была удалена начиная с версии 0.5.0.
+___
 
 EN
 Since byzantium staticcall can be used as well. This is basically the same as call, but will revert if the called function modifies the state in any way.
@@ -498,9 +514,18 @@ All three functions call, delegatecall and staticcall are very low-level functio
 The gas option is available on all three methods, while the value option is only available on call.
 
 RU
+Начиная с версии byzantium можно так же использовать `staticcall`. По сути, это то же самое, что и `call`, но она будет возвращена(?), если вызванная функция каким-либо образом изменит состояние.
+
+Все три функции `call`, `delegatecall` и `staticcall` являются сильно низкоуровневыми функциями и должны использоваться только в крайних случаях, так как они нарушают безопасность типов Solidity.
+
+Опция `gas` доступна для всех трех методов, а опция `value` - только для `call`.
 
 EN
 Note
 It is best to avoid relying on hardcoded gas values in your smart contract code, regardless of whether state is read from or written to, as this can have many pitfalls. Also, access to gas might change in the future.
 
 RU
+> <c>ℹ️ Примечание</c>
+___
+Лучше не полагаться на жестко закодированные значения газа в коде смарт-контракта, независимо от того, считывается ли состояние или записывается в него, так как здесь может быть много подводных камней. Кроме того, в будущем может измениться предоставление доступа к газу.
+___

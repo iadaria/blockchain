@@ -527,5 +527,87 @@ It is best to avoid relying on hardcoded gas values in your smart contract code,
 RU
 > <c>ℹ️ Примечание</c>
 ___
-Лучше не полагаться на жестко закодированные значения газа в коде смарт-контракта, независимо от того, считывается ли состояние или записывается в него, так как здесь может быть много подводных камней. Кроме того, в будущем может измениться предоставление доступа к газу.
+Лучше не полагаться на жестко закодированные значения газа в коде вашего смарт-контракта, независимо от того, считывается ли состояние или записывается в него, так как здесь может быть много подводных камней. Кроме того, в будущем может измениться предоставление доступа к газу.
 ___
+
+> `code` и `codehash`
+
+EN
+You can query the deployed code for any smart contract. Use .code to get the EVM bytecode as a bytes memory, which might be empty. Use .codehash to get the Keccak-256 hash of that code (as a bytes32). Note that addr.codehash is cheaper than using keccak256(addr.code).
+
+RU
+Вы можете запросить опубликованный код для любого смарт-контракта. Используйте `.code` для получения байткода EVM в виде `bytes memory`, который может быть пустым. Используйте `.codehash`, чтобы получить хэш Keccak-256 этого кода(в виде `bytes32`). Обратите внимание, что `addr.codehash` дешевле, чем использование `keccak256(addr.code)`.
+
+EN
+Note
+All contracts can be converted to address type, so it is possible to query the balance of the current contract using address(this).balance.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Все контракты могут быть преобразован к типу `address`, поэтому можно запросить баланс текущего контракта, используя `address(this).balance`.
+___
+
+### Contract types
+### Типы контрактов
+
+EN
+Every contract defines its own type. You can implicitly convert contracts to contracts they inherit from. Contracts can be explicitly converted to and from the address type.
+
+RU
+Каждый контракт определяется своим собственным типом. Вы можете неявно конвертировать одни контракты в другие путем наследования (?). Контракты можно явно конвертировать как в тип `address`, так и обратно.
+
+EN
+Explicit conversion to and from the address payable type is only possible if the contract type has a receive or payable fallback function. The conversion is still performed using address(x). If the contract type does not have a receive or payable fallback function, the conversion to address payable can be done using payable(address(x)). You can find more information in the section about the address type.
+
+RU
+Явное преобразование в тип `address payable` и обратно, возможно только в том случае, если контракт имеет функцию receive или  функцию payable fallback. Преобразование по-прежнему выполняется с помощью `address(x)`. Если данный тип контракта не имеет функции receive или payable fallback функции, преобразование в `address payable` может быть выполнено с помощью `payable(address(x))`. Более подробную информацию вы можете найти в разеделе об "Адресном типе".
+
+EN
+Note
+Before version 0.5.0, contracts directly derived from the address type and there was no distinction between address and address payable.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+До версии 0.5.0 контракты напрямую происходили/наследовались от типа `address` и не было различия между `address` и `address payable`.
+___
+
+EN
+If you declare a local variable of contract type (MyContract c), you can call functions on that contract. Take care to assign it from somewhere that is the same contract type.
+
+RU
+Если вы объявите локальную переменную типа контракт (`MyContract c`), вы соответственно сможете вызвать функции этого контракта. Позаботьтесь, чтобы присвоить ему тот же тип контракта.(?)
+
+EN
+You can also instantiate contracts (which means they are newly created). You can find more details in the ‘Contracts via new’ section.
+
+RU
+Вы также можете создавать экземпляры контрактов (т.е. создавать новые). Более подробную информацию вы можете найти в разделе "Контракты с помощью `new`".
+
+EN
+The data representation of a contract is identical to that of the address type and this type is also used in the ABI.
+
+RU
+Представление данных контракта идентично представлению данных типа `address`, и этот тип также используется в ABI.
+
+EM
+Contracts do not support any operators.
+
+RU
+Контракты не поддерживают никаких операторов (? т/е с контрактами нельзя выполнять никакие операции - задействовать в выражениях)
+
+EN
+The members of contract types are the external functions of the contract including any state variables marked as public.
+
+RU
+Членами(? составляющими элементами) элементов типа Контракт являются внешние функции контракта, включая любые переменные состояния, обозначенные как `public`.
+
+EN
+For a contract C you can use type(C) to access type information about the contract.
+
+RU
+Для любого контракта `C` вы можете использовать `type(C)`, чтобы получить"информацию о типе" этого контракта.
+
+### Fixed-size byte arrays
+###

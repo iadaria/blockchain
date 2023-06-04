@@ -610,4 +610,202 @@ RU
 Для любого контракта `C` вы можете использовать `type(C)`, чтобы получить"информацию о типе" этого контракта.
 
 ### Fixed-size byte arrays
+### Бинарные массивы(Массивы байтов) фиксированного размера
+
+EN
+The value types bytes1, bytes2, bytes3, …, bytes32 hold a sequence of bytes from one to up to 32.
+
+RU
+Тип значений `bytes1`, `bytes2`, `bytes3`, ..., `bytes32` хранят последовательность байтов от одного до 32.
+
+EN
+Operators:
+- Comparisons: <=, <, ==, !=, >=, > (evaluate to bool)
+- Bit operators: &, |, ^ (bitwise exclusive or), ~ (bitwise negation)
+- Shift operators: << (left shift), >> (right shift)
+- Index access: If x is of type bytesI, then x[k] for 0 <= k < I returns the k th byte (read-only).
+
+RU
+Операторы:
+- Сравнения: `<=`, `<`, `==`, `!=`, `>=`, `>` (возвращают bool)
+- Побитовые операторы: `&`, `|`, `^`(побитовое исключающее "или"), `~` (побитовое отрицание)
+- Побитовые операторы сдвига: `<<`(сдвиг влево), `>>` (сдвиг вправо)
+- Доступ к индексы: Если `x` имеет тип `bytesI`, тогда `x[k]` для `0 <= k < I` возвращает `k`-ый байт (только для чтения).
+
+EN
+The shifting operator works with unsigned integer type as right operand (but returns the type of the left operand), which denotes the number of bits to shift by. Shifting by a signed type will produce a compilation error.
+
+RU
+Оператор сдвига работает с беззнаковым целым типом в качетсве правого операнда (но возвращает тип левого операнда), который обозначает количество битов, на которое нужно сдвинуть. Попытка сдвинуть на знаковый тип приведет к ошибке компиляции.
+
+EN
+Members:
+
+RU
+Переменные-члены/поля/атрибуты:
+
+Поля:
+
+EN
+- .length yields the fixed length of the byte array (read-only).
+
+RU
+- `.length` выдает фиксированную длину массива байтов (только для чтения).
+
+EN
+Note
+The type bytes1[] is an array of bytes, but due to padding rules, it wastes 31 bytes of space for each element (except in storage). It is better to use the bytes type instead.
+
+RU
+> <c>ℹ️ Примечание</c>
+___
+Тип bytes1[] - массив байтов, но из-за правил заполнения он тратит 31 байт области на каждый элемент (за исключением хранения). Вместо него лучше использовать тип `bytes`.
+___
+
+EN
+Note
+Prior to version 0.8.0, byte used to be an alias for bytes1.
+
+RU
+> <c>ℹ️ Примечание</c>
+До 0.8.0 тип `byte` был псевдонимом для `bytes1`.
+
+### Dynamically-sized byte array
+### Массив байтов динамически изменяемого размера
+
+EN
+bytes:
+Dynamically-sized byte array, see Arrays. Not a value-type!
+
+string:
+Dynamically-sized UTF-8-encoded string, see Arrays. Not a value-type!
+
+RU
+`bytes`:
+Массив байтов динамического размера, см. раздел "Массивы". Не тип значения!
+
+`string`:
+Строка динамически изменяемого размера в кодировке UTF-8, см. раздел "Массивы". Не тип значения!
+
+### Address Literals
 ###
+EN
+Hexadecimal literals that pass the address checksum test, for example 0xdCad3a6d3569DF655070DEd06cb7A1b2Ccd1D3AF are of address type. Hexadecimal literals that are between 39 and 41 digits long and do not pass the checksum test produce an error. You can prepend (for integer types) or append (for bytesNN types) zeros to remove the error.
+RU
+Шестнадцатеричные литералы которые прошли проверку контрольной суммы адреса, например `0xdCad3a6d3569DF655070DEd06cb7A1b2Ccd1D3AF` имеют тип `address`. Шестнадцатеричные литералы длиной от 39 до 41 цифры, не прошедшие проверку контрольной суммы, выдают ошибку. Вы можете добавить в начало (для целочиселнных типов) или добавить в конец (для `bytesNN` типов) нули, чтобы устранить ошибку.
+
+> Литерал https://ru.wikipedia.org/wiki/%D0%9B%D0%B8%D1%82%D0%B5%D1%80%D0%B0%D0%BB_(%D0%B8%D0%BD%D1%84%D0%BE%D1%80%D0%BC%D0%B0%D1%82%D0%B8%D0%BA%D0%B0)
+
+EN
+Note
+The mixed-case address checksum format is defined in EIP-55.
+RU
+> <c>ℹ️ Примечание</c>
+___
+Контроль суммы адреса в смешанном регистре определен в EIP-55.
+___
+
+### Rational and Integer Literals
+### Рациональные и целочисленные литералы
+
+EN
+Integer literals are formed from a sequence of digits in the range 0-9. They are interpreted as decimals. For example, 69 means sixty nine. Octal literals do not exist in Solidity and leading zeros are invalid.
+
+RU
+Целочисленные литералы формируются из последовательности цифр 0-9. Они интерпретируются как десятичные числа. Например, 69 означает шестьдесят девять. Восьмеричные литералы не существуют в Solidity, и ведущие нули недействительны.
+
+EN
+Decimal fractional literals are formed by a . with at least one number after the decimal point. Examples include .1 and 1.3 (but not 1.).
+
+RU
+Десятичные дробные литералы образуются с помощью символа `.` с хотябы одной цифрой после десятичной точки. Например, `.1` и `1.3` (но не `1.`).
+
+EN
+Scientific notation in the form of 2e10 is also supported, where the mantissa can be fractional but the exponent has to be an integer. The literal MeE is equivalent to M * 10**E. Examples include 2e10, -2e10, 2e-10, 2.5e1.
+
+RU
+Также поддерживается экспоненциальная нотация в виде `2e10`, где мантисса может быть дробной `MeE`, но экспонента должна быть целым числом. Литерал `MeE` эквивалентен `M * 10 ** E`. Примеры: 2e10, -2e10, 2e-10, 2.5e1.
+
+> Мантисса https://en.wikipedia.org/wiki/Significand
+> https://www.online-calculator.org/scientific-notation/2e10
+
+EN
+Underscores can be used to separate the digits of a numeric literal to aid readability. For example, decimal 123_000, hexadecimal 0x2eff_abde, scientific decimal notation 1_2e345_678 are all valid. Underscores are only allowed between two digits and only one consecutive underscore is allowed. There is no additional semantic meaning added to a number literal containing underscores, the underscores are ignored.
+
+RU
+Подчеркивания могут использоваться для разделения цифр числового литерала, чтобы облегчить чтение. Например, являются допустимыми: десятичное `123_000`, шестнадцатеричное `0x2eff_abde`, экспоненциальная десятичная система счисления `1_2e345_678`. Подчеркивание допускается только между двумя цифрами и только одно последовательное подчеркивание. Никакого дополнительного семантического значения не добавляется в числовой литерал содержащий подчеркивания, подчеркивания игнорируются.
+
+EN
+Number literal expressions retain arbitrary precision until they are converted to a non-literal type (i.e. by using them together with anything other than a number literal expression (like boolean literals) or by explicit conversion). This means that computations do not overflow and divisions do not truncate in number literal expressions.
+
+RU
+Числовые литеральные выражения сохраняют произвольную точность до тех пор, пока они не буду преобразованы к нелитеральному типу (т.е. при использовании их вместе с чем-либо, не являющимся числовым литеральным выражением(например, с булевыми литералами) или при явном преобразовании). Это означает, что вычисления не переполняются, а деления не усекаются в числовых литеральных выражениях.
+
+> Арифметика произвольной точности - относится к арифметике, в которой длина чисел ограничена только объемом доступной памяти. https://ru.wikipedia.org/wiki/%D0%94%D0%BB%D0%B8%D0%BD%D0%BD%D0%B0%D1%8F_%D0%B0%D1%80%D0%B8%D1%84%D0%BC%D0%B5%D1%82%D0%B8%D0%BA%D0%B0
+
+EN
+For example, (2**800 + 1) - 2**800 results in the constant 1 (of type uint8) although intermediate results would not even fit the machine word size. Furthermore, .5 * 8 results in the integer 4 (although non-integers were used in between).
+
+RU
+Например, `(2**80 + 1) - 2**800` приводит к константе `1`(типа `uint8`), хотя промежуточные результаты даже не помещаются в размер машинного слова. Кроме того, `.5 * 8` дает целое число `4` (хотя вычисление производилось между нецелыми числами).
+
+EN
+Warning
+While most operators produce a literal expression when applied to literals, there are certain operators that do not follow this pattern:
+- Ternary operator (... ? ... : ...),
+
+- Array subscript (<array>[<index>]).
+
+You might expect expressions like 255 + (true ? 1 : 0) or 255 + [1, 2, 3][0] to be equivalent to using the literal 256 directly, but in fact they are computed within the type uint8 and can overflow.
+
+RU
+> <o>⚠️ Предупреждение </o>
+___
+Тогда как большинство операторов при применении к литералам дают литеральное выражение, существуют некоторые операторы, которые не следуют этому правилу:
+- Тернанрный оператор `(... ? ... : ...),
+- Индекс массива `(<array>[<index>])`.
+Вы можете ожидать, что выражение типа `255 + (true ? 1 : 0) or 255 + [1, 2, 3][0] будут эквиваленты прямому использованию летерала 256, но на самом деле они вычисляются с использованием типа `uint8` и могут вызывать переполнение.
+___
+
+EN
+Any operator that can be applied to integers can also be applied to number literal expressions as long as the operands are integers. If any of the two is fractional, bit operations are disallowed and exponentiation is disallowed if the exponent is fractional (because that might result in a non-rational number).
+
+!!! Повтори, проверь в следующий раз
+
+RU
+Любой оператор, который может быть применен к целым числам, также может быть применен к выражениям с литералами чисел, если операнды являются целыми числами. Если один из них дробный, то битовые операции запрещены, а возведение в степень запрещена, если показатель степени(экспонента) дробная (потому что это может привести к нерациональному числу).
+
+
+EN
+Shifts and exponentiation with literal numbers as left (or base) operand and integer types as the right (exponent) operand are always performed in the uint256 (for non-negative literals) or int256 (for a negative literals) type, regardless of the type of the right (exponent) operand.
+
+RU
+
+
+EN
+Warning
+Division on integer literals used to truncate in Solidity prior to version 0.4.0, but it now converts into a rational number, i.e. 5 / 2 is not equal to 2, but to 2.5.
+
+RU
+> <o>⚠️ Предупреждение </o>
+
+EN
+Note
+Solidity has a number literal type for each rational number. Integer literals and rational number literals belong to number literal types. Moreover, all number literal expressions (i.e. the expressions that contain only number literals and operators) belong to number literal types. So the number literal expressions 1 + 2 and 2 + 1 both belong to the same number literal type for the rational number three.
+
+RU
+
+EN
+Note
+Number literal expressions are converted into a non-literal type as soon as they are used with non-literal expressions. Disregarding types, the value of the expression assigned to b below evaluates to an integer. Because a is of type uint128, the expression 2.5 + a has to have a proper type, though. Since there is no common type for the type of 2.5 and uint128, the Solidity compiler does not accept this code.
+
+```java
+uint128 a = 1;
+uint128 b = 2.5 + a + 0.5;
+```
+RU
+
+```java
+uint128 a = 1;
+uint128 b = 2.5 + a + 0.5;
+```

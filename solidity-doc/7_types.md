@@ -770,16 +770,15 @@ ___
 EN
 Any operator that can be applied to integers can also be applied to number literal expressions as long as the operands are integers. If any of the two is fractional, bit operations are disallowed and exponentiation is disallowed if the exponent is fractional (because that might result in a non-rational number).
 
-!!! Повтори, проверь в следующий раз
-
 RU
-Любой оператор, который может быть применен к целым числам, также может быть применен к выражениям с литералами чисел, если операнды являются целыми числами. Если один из них дробный, то битовые операции запрещены, а возведение в степень запрещена, если показатель степени(экспонента) дробная (потому что это может привести к нерациональному числу).
+Любой оператор, который может быть применен к целым числам, также может быть применен к выражениям с литералами чисел, если операнды являются целыми числами. Если один из них дробный, то битовые операции запрещены, а возведение в степень запрещена, если показатель степени(экспонента) дробный (потому что это может привести к нерациональному числу).
 
 
 EN
 Shifts and exponentiation with literal numbers as left (or base) operand and integer types as the right (exponent) operand are always performed in the uint256 (for non-negative literals) or int256 (for a negative literals) type, regardless of the type of the right (exponent) operand.
 
 RU
+Побитовые сдвиги и возведение в степень с литеральными числами на месте левого(или базового) операнда и целыми типами на месте правого (возведение в степень) операнда, всегда выполняются в типе `uint256`(для неотрицательных литералов) или `int256` (для отрицательных литералов), независимо от типа правого (возведение в степень) операнда.
 
 
 EN
@@ -788,12 +787,15 @@ Division on integer literals used to truncate in Solidity prior to version 0.4.0
 
 RU
 > <o>⚠️ Предупреждение </o>
+В Solidity до версии 0.4.0 деление на целочисленные литералы усекалось, но теперь оно преобразуется в рациональное число, т.е. `5/2` равно не `2`, а `2.5`.
 
 EN
 Note
 Solidity has a number literal type for each rational number. Integer literals and rational number literals belong to number literal types. Moreover, all number literal expressions (i.e. the expressions that contain only number literals and operators) belong to number literal types. So the number literal expressions 1 + 2 and 2 + 1 both belong to the same number literal type for the rational number three.
 
 RU
+> <c>ℹ️ Примечание</c>
+В Solidity есть числовой литеральный тип для каждого рационального числа. Целочисленные литералы и литералы рациональных чисел принадлежат к типам числовых литералов. Более того, все числовые выражения (т.е. выражения, содержащие только числовые литералы и операторы) принадлежат к числовым литеральным типам. Так, числовое выражение `1 + 2` и `2 + 1` принадлежат одному и тому же числовому литеральному типу для рационального числа три.
 
 EN
 Note
@@ -804,6 +806,8 @@ uint128 a = 1;
 uint128 b = 2.5 + a + 0.5;
 ```
 RU
+> <c>ℹ️ Примечание</c>
+Числовые литеальные выражения преобразуются в нелитеральный тип, как только они используются с нелитеральными выражениями. Если не принимать во внимание типы, то значение выражения, присвоенного `b`, оценивается как целое число. Поскольку `a` имеет тип `uint128`, выражение `2.5 + a` должно иметь соответствующий тип. Поскольку не существует общего типа для типов `2.5` и `uint128`, компилятор Solidity не принимает этот код.
 
 ```java
 uint128 a = 1;

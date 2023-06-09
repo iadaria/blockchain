@@ -927,3 +927,70 @@ Hexadecimal literals in some ways behave like string literals but are not implic
 
 RU
 Шестнадцатеричные литералы в некотором смысле ведут себя как строковые литералы, но неявно не могут преобразовываться к типу `string`.
+
+### Enums
+### Перечисления
+
+EN
+Enums are one way to create a user-defined type in Solidity. They are explicitly convertible to and from all integer types but implicit conversion is not allowed. The explicit conversion from integer checks at runtime that the value lies inside the range of the enum and causes a Panic error otherwise. Enums require at least one member, and its default value when declared is the first member. Enums cannot have more than 256 members.
+
+RU
+Перечисления - это один из способов создания пользовательского типа в Solidity. Они явно конвертируются во все целочисленные типы и обратно, но неявное преобразование не допускается. Явное преобразование из целого числа проверяется во время выполнения, что значение принадлежит диапазону перечисления, и в противном случае вызывает ошибку `Panic error`. Перечисления должны содержать хотя бы один элемент, а его значение по умолчанию при объявлении является первым элементом. Перечисления не могут иметь более 256 членов.
+
+EN
+The data representation is the same as for enums in C: The options are represented by subsequent unsigned integer values starting from 0.
+
+RU
+Представление данных такое же, как и для Перечислений в языке C: Параметры/элементы представлены последовательными беззнаковыми целыми значениями, начиная с 0.
+
+EN
+Using type(NameOfEnum).min and type(NameOfEnum).max you can get the smallest and respectively largest value of the given enum.
+
+RU
+С помощью `type(NameOfEnum).min` и `type(NameOfEnum).max` можно получить наименьшее и соответственно наибольшее значения данного перечисления.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.8;
+
+contract test {
+    enum ActionChoices { GoLeft, GoRight, GoStraight, SitStill }
+    ActionChoices choice;
+    ActionChoices constant defaultChoice = ActionChoices.GoStraight;
+
+    function setGoStraight() public {
+        choice = ActionChoices.GoStraight;
+    }
+
+    // Since enum types are not part of the ABI, the signature of "getChoice"
+    // will automatically be changed to "getChoice() returns (uint8)"
+    // for all matters external to Solidity.
+    //
+    //
+    //
+    function getChoice() public view returns (ActionChoices) {
+        return choice;
+    }
+
+    function getDefaultChoice() public pure returns (uint) {
+        return uint(defaultChoice);
+    }
+
+    function getLargestValue() public pure returns (ActionChoices) {
+        return type(ActionChoices).max;
+    }
+
+    function getSmallestValue() public pure returns (ActionChoices) {
+        return type(ActionChoices).min;
+    }
+}
+```
+
+EN
+Note
+Enums can also be declared on the file level, outside of contract or library definitions.
+
+RU
+
+### User-defined Value Types
+###

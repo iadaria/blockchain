@@ -306,3 +306,5 @@ ___
 CR - возврат каретки,
 LF - подача на строку.
 ___
+
+> Новая строка https://translated.turbopages.org/proxy_u/en-ru.ru.6c958fca-64836626-ad52f1ef-74722d776562/https/en.wikipedia.org/wiki/%5Cr%5Cn

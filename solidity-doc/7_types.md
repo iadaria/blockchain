@@ -813,3 +813,117 @@ RU
 uint128 a = 1;
 uint128 b = 2.5 + a + 0.5;
 ```
+
+### String Literals and Types
+### Строковые литералы и типы
+
+EN
+String literals are written with either double or single-quotes ("foo" or 'bar'), and they can also be split into multiple consecutive parts ("foo" "bar" is equivalent to "foobar") which can be helpful when dealing with long strings. They do not imply trailing zeroes as in C; "foo" represents three bytes, not four. As with integer literals, their type can vary, but they are implicitly convertible to bytes1, …, bytes32, if they fit, to bytes and to string.
+
+RU
+Строковые литералы записываются с двойными или одинарными кавычками(`"foo"` или `'bar'`), а также могут быть разбиты на несколько последовательных частей(`"foo"` `"bar"` эквивалентно `"foobar"`), что может быть полезно при работе с длинными строками. Они не подразумевают нули в конце строки, как в C; `"foo"` представляет три байта, а не четыре. Как и в случае целочисленных литералов, их тип может меняться, но они неявно преобразуются в `bytes1`, ..., `bytes32`, если они подходят, в `bytes` и в `string`.
+ 
+EN
+For example, with bytes32 samevar = "stringliteral" the string literal is interpreted in its raw byte form when assigned to a bytes32 type.
+
+RU
+Например, при `bytes32 samevar = "stringliteral"` строковвый литерал интерпретируется в своей необработанной байтовой форме, когда присваивается типу `bytes32`.
+
+EN
+String literals can only contain printable ASCII characters, which means the characters between and including 0x20 .. 0x7E.
+
+RU
+Строковые литералы могут содержать только печатные символы ASCII, то есть символы между 0x20...0x7E включительнь.
+
+EN
+Additionally, string literals also support the following escape characters:
+- \<newline> (escapes an actual newline)
+- \\ (backslash)
+- \' (single quote)
+- \" (double quote)
+- \n (newline)
+- \r (carriage return)
+- \t (tab)
+- \xNN (hex escape, see below)
+- \uNNNN (unicode escape, see below)
+
+RU
+Кроме того, строковые литералы поддерживают следующие управляющие символы:
+- `\<newline>` (экранируется новую строку)
+- `\\` (обратная косая черта)
+- `\'` (одинарная кавычка)
+- `\"` (двойная кавычка)
+- `\n` (новая строка)
+- `\r` (возврат каретки)
+- `\t` (табуляция)
+- `\xNN` (шестнадцатеричный символ, см. ниже)
+- `\uNNNN` (экранирование юникода, см. ниже)
+
+EN
+\xNN takes a hex value and inserts the appropriate byte, while \uNNNN takes a Unicode codepoint and inserts an UTF-8 sequence.
+
+RU
+`\xNN` принимает шестнадцатеричное значение и вставляет соответствующий байт, а `\uNNNN` принимает кодовую ? Юникода и вставляет последовательность UTF-8.
+
+EN
+Note
+Until version 0.8.0 there were three additional escape sequences: \b, \f and \v. They are commonly available in other languages but rarely needed in practice. If you do need them, they can still be inserted via hexadecimal escapes, i.e. \x08, \x0c and \x0b, respectively, just as any other ASCII character.
+
+RU
+> <c>ℹ️ Примечание</c>
+До версии 0.8.0 существовали три дополнительные управляющие последовательности: `\b`, `\f` и `\v`. Они широко распространены в других языках, но редко нужны на практике. Если они все же нужны, их можно вставить через шестнадцатеричные экранирующие символы, т.е `\x08` `\x0c` `\xob`, соотвественно, как и любой другой символ ASCII.
+
+EN
+The string in the following example has a length of ten bytes. It starts with a newline byte, followed by a double quote, a single quote a backslash character and then (without separator) the character sequence abcdef.
+"\n\"\'\\abc\
+def"
+
+RU
+Строка в следующем примере имеет длину десять байт. Она начинается с байта новой строки, затем следует двойная кавычка, затем одинарная, потом символ обратной косой черты и затем (без разделителя) последовательность символов `abcdef`. 
+```java
+"\n\"\'\\abc\
+def"
+```
+
+EN
+Any Unicode line terminator which is not a newline (i.e. LF, VF, FF, CR, NEL, LS, PS) is considered to terminate the string literal. Newline only terminates the string literal if it is not preceded by a \.
+
+RU
+Любой управляющий символ Unicode, не ялвяющийся новой строкой (т.е. LF, VF, FF, CR, NEL, LS, PS), завершает строковый литерал. Новая строка завершает строковый литерал, только если ей не предшествует `\`.
+
+>Новая строка https://translated.turbopages.org/proxy_u/en-ru.ru.6c958fca-64836626-ad52f1ef-74722d776562/https/en.wikipedia.org/wiki/%5Cr%5Cn
+
+### Unicode Literals
+### Юникод литералы
+
+EN
+While regular string literals can only contain ASCII, Unicode literals – prefixed with the keyword unicode – can contain any valid UTF-8 sequence. They also support the very same escape sequences as regular string literals.
+
+string memory a = unicode"Hello 😃";
+
+RU
+В то время как обычные строковые литералы могут содержать ASCII, Unicode литералы - с префиксом ключевого слова `unicode` - могут содержать любую допустимую последовательность UTF-8. 
+```java
+string memory a = unicode"Hello 😃";
+```
+
+### Hexadecimal Literals
+### Шестнадцатеричные литералы
+
+EN
+Hexadecimal literals are prefixed with the keyword hex and are enclosed in double or single-quotes (hex"001122FF", hex'0011_22_FF'). Their content must be hexadecimal digits which can optionally use a single underscore as separator between byte boundaries. The value of the literal will be the binary representation of the hexadecimal sequence.
+
+RU
+Шестнадцатеричные литералы имеют префикс с ключевым словом `hex` и заключаются в двойные или одинарные кавычки(`hex"001122FF"`, `hex'0011_22_FF'`). Их содержимое должно быть шестнадцатеричные цифры, которые могут по желанию использовать одиночное подчеркивание в качестве разделения между границами байтов. Значением литерала будет двоичное представление шестнадцатеричной последовательност.
+
+EN
+Multiple hexadecimal literals separated by whitespace are concatenated into a single literal: hex"00112233" hex"44556677" is equivalent to hex"0011223344556677"
+
+RU
+Несколько шестнадцатеричных литералов, разделенным пробелами, объединяются в один литерал: `hex"00112233" hex"44556677"` эквивалентен `hex"0011223344556677"`
+
+EN
+Hexadecimal literals in some ways behave like string literals but are not implicitly convertible to the string type.
+
+RU
+Шестнадцатеричные литералы в некотором смысле ведут себя как строковые литералы, но неявно не могут преобразовываться к типу `string`.

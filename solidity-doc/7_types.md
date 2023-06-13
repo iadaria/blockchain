@@ -965,9 +965,8 @@ contract test {
     // Since enum types are not part of the ABI, the signature of "getChoice"
     // will automatically be changed to "getChoice() returns (uint8)"
     // for all matters external to Solidity.
-    //
-    //
-    //
+    // Поскольку перечисления не являются частью ABI, метод "getChoice"
+    // будет автоматически изменен на "getChoice() returns (uint8)"
     function getChoice() public view returns (ActionChoices) {
         return choice;
     }
@@ -985,12 +984,94 @@ contract test {
     }
 }
 ```
-
 EN
 Note
 Enums can also be declared on the file level, outside of contract or library definitions.
 
 RU
+> <c>ℹ️ Примечание</c>
+Перечисления также могут быть объявлены на уровне файлов, вне контрактов или библиотек.
 
 ### User-defined Value Types
-###
+### Пользовательские типы значений
+
+EN
+A user-defined value type allows creating a zero cost abstraction over an elementary value type. This is similar to an alias, but with stricter type requirements.
+
+RU
+Определяемый пользователем тип значений, позволяет создавать абстракцию с нулевой стоимостью поверх элементарного типа значений.
+
+EN
+A user-defined value type is defined using type C is V, where C is the name of the newly introduced type and V has to be a built-in value type (the “underlying type”). The function C.wrap is used to convert from the underlying type to the custom type. Similarly, the function C.unwrap is used to convert from the custom type to the underlying type.
+
+RU
+Пользовательский тип определяется с помощью `type C is V`, где `C` - имя нового вводимого типа, а `V` должен быть встроенным типом("базовый тип"). Функция `C.wrap` используется для преобразования базового типа в пользовательский тип. Аналогично, функция `C.unwrap` используется для конвертирования пользовательского типа в базовый тип.
+
+EN
+The type C does not have any operators or attached member functions. In particular, even the operator == is not defined. Explicit and implicit conversions to and from other types are disallowed.
+
+RU
+Тип `C` не работает ни с одним оператором или не имеет вложенных функций-членов. В частности, даже оператор `==` не определен. Явные и неявные преобразования в дургие типы и и из них - запрещены.
+
+EN
+The data-representation of values of such types are inherited from the underlying type and the underlying type is also used in the ABI.
+
+RU
+Предоставление значений таких типов наследуется от базового типа, а базовый тип также используется в ABI.
+
+EN
+The following example illustrates a custom type UFixed256x18 representing a decimal fixed point type with 18 decimals and a minimal library to do arithmetic operations on the type.
+
+RU
+Следующий пример иллюстрирует пользовательский тип `UFixed256x18`, представляющий собой десятичный тип с фиксированной запятой с 18 знаками и минимальную библиотеку для выполнения арифметических операций над типом.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.8;
+
+// Represent a 18 decimal, 256 bit wide fixed point type using a user-defined value type.
+// Представление 18 десятичных знаков типа с фиксированной точкой 256-битного формата с помощью 
+// пользовательского типа
+type UFixed256x18 is uint256;
+
+/// A minimal library to do fixed point operations on UFixed256x18.
+/// Минимальная библиотека для выполнения операций с фиксированной точкой над `UFixed256x18`
+library FixedMath {
+    uint constant multiplier = 10**18;
+
+    /// Adds two UFixed256x18 numbers. Reverts on overflow, relying on checked
+    /// arithmetic on uint256.
+    /// Складываем два числа `UFixed256x18`. Откатывается при переполнении, на основе
+    /// проверки арифметических операции с uint256.
+    function add(UFixed256x18 a, UFixed256x18 b) internal pure returns (UFixed256x18) {
+        return UFixed256x18.wrap(UFixed256x18.unwrap(a) + UFixed256x18.unwrap(b));
+    }
+    /// Multiplies UFixed256x18 and uint256. Reverts on overflow, relying on checked
+    /// arithmetic on uint256.
+    /// Перемножаем число `UFixed256x18` и `uint256`. Откатывается при переполнении, на основе
+    /// проверки арифметических операции с uint256.
+    function mul(UFixed256x18 a, uint256 b) internal pure returns (UFixed256x18) {
+        return UFixed256x18.wrap(UFixed256x18.unwrap(a) * b);
+    }
+    /// Take the floor of a UFixed256x18 number.
+    /// @return the largest integer that does not exceed `a`.
+    /// Возвращает модуль числа `UFixed256x18`
+    /// @return наибольшее целое число, которое не превышает `a`.
+    function floor(UFixed256x18 a) internal pure returns (uint256) {
+        return UFixed256x18.unwrap(a) / multiplier;
+    }
+    /// Turns a uint256 into a UFixed256x18 of the same value.
+    /// Reverts if the integer is too large.
+    /// Превращаем `uint256` в `UFixed256x18` с тем же значением.
+    /// Откатывается, если целое число слишком боьшое.
+    function toUFixed256x18(uint256 a) internal pure returns (UFixed256x18) {
+        return UFixed256x18.wrap(a * multiplier);
+    }
+}
+```
+EN
+Notice how UFixed256x18.wrap and FixedMath.toUFixed256x18 have the same signature but perform two very different operations: The UFixed256x18.wrap function returns a UFixed256x18 that has the same data representation as the input, whereas toUFixed256x18 returns a UFixed256x18 that has the same numerical value.
+
+RU
+> <c>ℹ️ Примечание</c>
+Обратите внимание, что`UFixed256x18.wrap` и `FixedMath.toUFixed256x18` имеют одинаковую сигнатуру, но выполняют две совершенно разные операции: Функция `UFixed256x18.wrap` возвращает `UFixed256x18`, имеющее то же представление данные, что и входные данные, тогда как `toUFixed256x18` возвращает `UFixed256x18`, имеющий то же числовое значение. (?)

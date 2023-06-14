@@ -1075,3 +1075,284 @@ Notice how UFixed256x18.wrap and FixedMath.toUFixed256x18 have the same signatur
 RU
 > <c>ℹ️ Примечание</c>
 Обратите внимание, что`UFixed256x18.wrap` и `FixedMath.toUFixed256x18` имеют одинаковую сигнатуру, но выполняют две совершенно разные операции: Функция `UFixed256x18.wrap` возвращает `UFixed256x18`, имеющее то же представление данные, что и входные данные, тогда как `toUFixed256x18` возвращает `UFixed256x18`, имеющий то же числовое значение. (?)
+
+### Function Types
+### Типы функций
+
+EN
+Function types are the types of functions. Variables of function type can be assigned from functions and function parameters of function type can be used to pass functions to and return functions from function calls. Function types come in two flavours - internal and external functions:
+
+RU
+Переменные типа `function` могут быть присвоены(получены) из функций, а параметры функции типа `function` могут использоваться для передачи функций и возврата функций из вызовов функций. Типы функций бывают двух видов - внутренние `internal` и внешние `external`.
+
+EN
+Internal functions can only be called inside the current contract (more specifically, inside the current code unit, which also includes internal library functions and inherited functions) because they cannot be executed outside of the context of the current contract. Calling an internal function is realized by jumping to its entry label, just like when calling a function of the current contract internally.
+
+RU
+Внутренние функции могут быть вызваны только внутри текущего контракта (точнее, внутри текущего блока кода, который также включает вунтренние библиотечные функции и наследуемые функции), поскольку они не могут быть выполнены вне контекста текущего контракта. Вызов внутренней функции осуществялется путем перехода к ее (entry label ?) названию, как и при внутреннем вызове функции текущего контракта.
+
+EN
+External functions consist of an address and a function signature and they can be passed via and returned from external function calls.
+
+RU
+Внешние функции состоят из адреса и сигнатуры функции, и они могут передаваться через вызовы внешних функций и возвращаться из них.
+
+>Иногда различают сигнатуру вызова и сигнатуру реализации функции. Сигнатура вызова обычно составляется по синтаксической конструкции вызова функции с учётом сигнатуры области видимости данной функции, имени функции, последовательности фактических типов аргументов в вызове и типе результата. В сигнатуре реализации обычно участвуют некоторые элементы из синтаксической конструкции объявления функции: спецификатор области видимости функции, её имя и последовательность формальных типов аргументов.
+>https://ru.wikipedia.org/wiki/API
+
+EN
+Function types are notated as follows:
+function (<parameter types>) {internal|external} [pure|view|payable] [returns (<return types>)]
+
+RU
+`function` типы обозначаются следующим образом:
+```java
+function (<parameter types>) {internal|external} [pure|view|payable] [returns (<return types>)]
+```
+
+EN
+In contrast to the parameter types, the return types cannot be empty - if the function type should not return anything, the whole returns (<return types>) part has to be omitted.
+
+RU
+В отличии от типов передаваемых параметров, типы возвращаемых данных не могут быть пустыми - если функция ничего не возвращает, вся часть `returns (<return types>)` должна быть опущена.
+
+EN
+By default, function types are internal, so the internal keyword can be omitted. Note that this only applies to function types. Visibility has to be specified explicitly for functions defined in contracts, they do not have a default.
+
+RU
+По умолчанию, `function` типы являются внутренними, поэтому ключевое слово `internal` можно опустить. Обратите внимание, что это относится только к типам `function`. Видимость должна быть явно указана для функций, определенных в контрактах, они не имеют значения по умолчанию. 
+
+EN
+Conversions:
+A function type A is implicitly convertible to a function type B if and only if their parameter types are identical, their return types are identical, their internal/external property is identical and the state mutability of A is more restrictive than the state mutability of B. In particular:
+- pure functions can be converted to view and non-payable functions
+- view functions can be converted to non-payable functions
+- payable functions can be converted to non-payable functions
+
+No other conversions between function types are possible.
+
+RU
+Преобразования:
+Тип функции `A` неявно преобразуется в тип функции `B` тогда и только тогда, когда их типы параметров одинаковые, их типы возвращаемых данных одинаковые, их свойства `internal/external` одинаковые и мутабельность состояния `A` более ограниченная, чем изменяемость/мутабельность состояния `B`. А именно:
+- `pure`(чистые) функции могут быть конвертированы в функции `view`(просмотра) и `non-payable`(неплатежные)
+- `view` функции могут быть конвертированы в `non-payable` функции
+- `payable` функции могут быть конвертированы в `non-payable` функции
+
+Никакие другие преобразования между типами `function` невозможны.
+
+EN
+The rule about payable and non-payable might be a little confusing, but in essence, if a function is payable, this means that it also accepts a payment of zero Ether, so it also is non-payable. On the other hand, a non-payable function will reject Ether sent to it, so non-payable functions cannot be converted to payable functions. To clarify, rejecting ether is more restrictive than not rejecting ether. This means you can override a payable function with a non-payable but not the other way around.
+
+RU
+Правила о `payable` и `non-payable` могут быть немного запутанными, но по сути, если функция является `payable`, это означает, что она также принимает платеж ноль Эфиров, поэтому она также явялется `non-payable`. С другой стороны, `non-payable` функция будет отклонять отправленный ей Эфир, поэтому `non-payable` функции не могут быть конвертированы в `payable` функции. Чтобы прояснить, отклонение Эфира является более строгим/ограничивающим свойством, чем не отклонение Эфира. Это означает, что вы можете заменить оплачиваему функцию неоплачиваемой, но не наоборот.
+
+EN
+Additionally, When you define a non-payable function pointer, the compiler does not enforce that the pointed function will actually reject ether. Instead, it enforces that the function pointer is never used to send ether. Which makes it possible to assign a payable function pointer to a non-payable function pointer ensuring both types behave the same way, i.e, both cannot be used to send ether.
+
+RU
+Кроме того, когда вы определяете указатель на `non-payable` функцию, компилятор не требует, чтобы указанная функция на самом деле отклоняла Эфир. Вместо этого компилятор следит за тем, чтобы указатель функции не использовался для отправки эфира. Что позволяет присвоить указатель на `payable` функцию указателю на `non-payable` функцию, при этом оба типа ведут себя одинаково, т.е. оба не могут быть использованы для отправки эфира.
+
+EN
+If a function type variable is not initialised, calling it results in a Panic error. The same happens if you call a function after using delete on it.
+
+RU
+Если переменная типа `function` не инициализирована, то ее вызов приводит к ошибке `Panic error`. То же самое происходит, если вы вызываете функцию после использования с ней `delete`.(?)
+
+EN
+If external function types are used outside of the context of Solidity, they are treated as the function type, which encodes the address followed by the function identifier together in a single bytes24 type.
+
+RU
+Если внешние типы `function` используются вне контекста Solidity, они рассматриваются как тип `function`, который кодирует адрес, за которым следует идентификатор функции вместе в одном типе `bytes24`.(?)
+
+EN
+Note that public functions of the current contract can be used both as an internal and as an external function. To use f as an internal function, just use f, if you want to use its external form, use this.f.
+
+RU
+Обратите внимание, что публичные функции в текущем контракте могут использоваться как в качестве внутренней, так и в качестве внешней функции. Чтобы использовать `f`, как внутренню  функцию, просто используйте `f`, если вы хотите использовать ее внешнюю форму, то используйте `this.f`.
+
+EN
+A function of an internal type can be assigned to a variable of an internal function type regardless of where it is defined. This includes private, internal and public functions of both contracts and libraries as well as free functions. External function types, on the other hand, are only compatible with public and external contract functions.
+
+RU
+Функция внутреннего типа может быть присвоена переменной типа `internla function` незаависимо от того, где она определена. Сюда относятся частные, внутренние и публичные функции как контрактов, так и библиотек, а также `free` функции. Внешние типы функций, с другой стороны, совместимы только публичными и внешними функциями контрактов.
+
+EN
+Note
+External functions with calldata parameters are incompatible with external function types with calldata parameters. They are compatible with the corresponding types with memory parameters instead. For example, there is no function that can be pointed at by a value of type function (string calldata) external while function (string memory) external can point at both function f(string memory) external {} and function g(string calldata) external {}. This is because for both locations the arguments are passed to the function in the same way. The caller cannot pass its calldata directly to an external function and always ABI-encodes the arguments into memory. Marking the parameters as calldata only affects the implementation of the external function and is meaningless in a function pointer on the caller’s side.
+
+RU (?)
+> <c>ℹ️ Примечание</c>
+Внешние функции с параметрами `calldata` несовместимы с внешними `function` типами с параметрами `calldata`. Вместо этого они совместимы с соответствующими типами с `memory`  параметрами. Например, не существует функции, на которую может указывать значение типа `function(string calldata) external`, в то время как `functioin (string memeory) external` может указывать как на `function f(string memory) external {}`, так и на `function g(string calldata) external {}`. Это связано с тем, что в обоих случаях аргументы передаются в функцию одинаково. Вызывающая сторона(?) не может передать свои `calldata`(данные для вызова) непосредственно во внешнюю функцию и всегда кодирует в ABI аргументы в память. Пометка параметров как `calldata` влияет только на реализацию внешней функции и не имеет смысла в указателе функции на стороне вызывающей стороны.
+
+EN
+Libraries are excluded because they require a delegatecall and use a different ABI convention for their selectors. Functions declared in interfaces do not have definitions so pointing at them does not make sense either.
+
+RU
+Библиотеки исключены, поскольку они требуют `delegatecall` и используют другое ABI соглашение/условное обозначение для своих селекторов (?). Функции, объявленные в интерфейсах, не имеют определений, поэтому указание/ссылки(?) на них также не имеет смысла.
+
+EN
+Members:
+External (or public) functions have the following members:
+- .address returns the address of the contract of the function.
+- .selector returns the ABI function selector
+
+RU
+Поля(вложенные функции-члены):
+Внешние(или публичные) функции имеют следующие свойства:
+- `.address` возвращает адрес контракта функции
+- `.selector` возвращает селектор функции ABI (?)
+
+EN
+Note
+External (or public) functions used to have the additional members .gas(uint) and .value(uint). These were deprecated in Solidity 0.6.2 and removed in Solidity 0.7.0. Instead use {gas: ...} and {value: ...} to specify the amount of gas or the amount of wei sent to a function, respectively. See External Function Calls for more information.
+
+RU
+> <c>ℹ️ Примечание</c>
+Внешние (или публичные) функции ранее имели дополнительные поля(свойства) `.gas(uint)` и `.value(uint)`. Они считались устаревшими в Solidity 0.6.2 и удалены из Solidity 0.7.0. Вместо этих свойств используйте `{gas: ...}` и `{value: ...}`, чтобы указать количество газа или количество `wei`, передаваемое в функцию, соотвественно. Дополнительную информацию см. в разделе "Внешние вызовы функций"
+
+EN
+Example that shows how to use the members:
+
+RU
+Пример, показывающий, как использовать свойства функций:
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.6.4 <0.9.0;
+
+contract Example {
+    function f() public payable returns (bytes4) {
+        assert(this.f.address == address(this));
+        return this.f.selector;
+    }
+
+    function g() public {
+        this.f{gas: 10, value: 800}();
+    }
+}
+```
+
+EN
+Example that shows how to use internal function types:
+
+RU
+Пример показывает как использовать типы `internal function`:
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.16 <0.9.0;
+
+library ArrayUtils {
+    // internal functions can be used in internal library functions because
+    // they will be part of the same code context
+    // Внутренние функции можно использовать во внутренних библиотечных функциях,
+    // потому что они будут частью одного и того же контекста кода
+    function map(uint[] memory self, function (uint) pure returns (uint) f)
+        internal
+        pure
+        returns (uint[] memory r)
+    {
+        r = new uint[](self.length);
+        for (uint i = 0; i < self.length; i++) {
+            r[i] = f(self[i]);
+        }
+    }
+
+    function reduce(
+        uint[] memory self,
+        function (uint, uint) pure returns (uint) f
+    )
+        internal
+        pure
+        returns (uint r)
+    {
+        r = self[0];
+        for (uint i = 1; i < self.length; i++) {
+            r = f(r, self[i]);
+        }
+    }
+
+    function range(uint length) internal pure returns (uint[] memory r) {
+        r = new uint[](length);
+        for (uint i = 0; i < r.length; i++) {
+            r[i] = i;
+        }
+    }
+}
+```
+
+```java
+contract Pyramid {
+    using ArrayUtils for *;
+
+    function pyramid(uint l) public pure returns (uint) {
+        return ArrayUtils.range(l).map(square).reduce(sum);
+    }
+
+    function square(uint x) internal pure returns (uint) {
+        return x * x;
+    }
+
+    function sum(uint x, uint y) internal pure returns (uint) {
+        return x + y;
+    }
+}
+```
+EN
+Another example that uses external function types:
+
+RU
+Еще один пример, использующий типы `external function`:
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.22 <0.9.0;
+
+
+contract Oracle {
+    struct Request {
+        bytes data;
+        function(uint) external callback;
+    }
+
+    Request[] private requests;
+    event NewRequest(uint);
+
+    function query(bytes memory data, function(uint) external callback) public {
+        requests.push(Request(data, callback));
+        emit NewRequest(requests.length - 1);
+    }
+
+    function reply(uint requestID, uint response) public {
+        // Here goes the check that the reply comes from a trusted source
+        requests[requestID].callback(response);
+    }
+}
+```
+
+```java
+contract OracleUser {
+    Oracle constant private ORACLE_CONST = Oracle(address(0x00000000219ab540356cBB839Cbe05303d7705Fa)); // known contract
+    uint private exchangeRate;
+
+    function buySomething() public {
+        ORACLE_CONST.query("USD", this.oracleResponse);
+    }
+
+    function oracleResponse(uint response) public {
+        require(
+            msg.sender == address(ORACLE_CONST),
+            "Only oracle can call this."
+        );
+        exchangeRate = response;
+    }
+}
+```
+
+EN
+Note
+Lambda or inline functions are planned but not yet supported.
+
+RU
+> <c>ℹ️ Примечание</c>
+`Lambda`(лямбда) или `inline`(встроенные) функции планируются, но пока не поддреживаются.

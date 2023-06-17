@@ -1308,7 +1308,6 @@ RU
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.4.22 <0.9.0;
 
-
 contract Oracle {
     struct Request {
         bytes data;
@@ -1325,12 +1324,11 @@ contract Oracle {
 
     function reply(uint requestID, uint response) public {
         // Here goes the check that the reply comes from a trusted source
+        // Проверяем, что ответ пришел из доверенного источника
         requests[requestID].callback(response);
     }
 }
-```
 
-```java
 contract OracleUser {
     Oracle constant private ORACLE_CONST = Oracle(address(0x00000000219ab540356cBB839Cbe05303d7705Fa)); // known contract
     uint private exchangeRate;
@@ -1356,3 +1354,116 @@ Lambda or inline functions are planned but not yet supported.
 RU
 > <c>ℹ️ Примечание</c>
 `Lambda`(лямбда) или `inline`(встроенные) функции планируются, но пока не поддреживаются.
+
+### Reference Types
+### Типы ссылок
+
+EN
+Values of reference type can be modified through multiple different names. Contrast this with value types where you get an independent copy whenever a variable of value type is used. Because of that, reference types have to be handled more carefully than value types. Currently, reference types comprise structs, arrays and mappings. If you use a reference type, you always have to explicitly provide the data area where the type is stored: memory (whose lifetime is limited to an external function call), storage (the location where the state variables are stored, where the lifetime is limited to the lifetime of a contract) or calldata (special data location that contains the function arguments).
+
+RU
+Значения ссылочного типа могут быть изменены через несколько различных имен. В отличие от типов `value`, где вы получаете независимую копию каждый раз, когда используете переменную типа `value`. Из-за этого со ссылочными типами нужно обращаться более осторожно, чем со значениями. В настоящее время, ссылочные типы включают в себя Структуры, Массивы и `Mappings`(Сопоставления ?). Если вы используете ссылочный тип, вы всегда должны явно указывать область данных, в которых хранится данный тип: `memory` (память: время жизни которой ограничено вызовом внешней функции), `storage` (хранилище: место хранения переменных состояния, время жизни которого ограничено временем жизни контракта) или `calldata`(специальное место хранения данных, содержащее аргументы функции).
+
+EN
+An assignment or type conversion that changes the data location will always incur an automatic copy operation, while assignments inside the same data location only copy in some cases for storage types.
+
+RU
+Присваивание и конвертирование типа, изменящее область хранения данных всегда влечет за собой операцию автоматического копирования, в то время как присваивания внутри одной и той же области хранения данных, коппируются только в некоторых случаях для типов `storage`.
+
+### Data location
+### Место хранения данных/Расположение данных
+
+EN
+Every reference type has an additional annotation, the “data location”, about where it is stored. There are three data locations: memory, storage and calldata. Calldata is a non-modifiable, non-persistent area where function arguments are stored, and behaves mostly like memory.
+
+RU
+Каждый ссылочный тип имеет дополнительную аннотацию, "место хранения данных", о том, где они хранятся. Существует три места хранения данных: `memory`, `storage` и `calldata`. `Calldata` - это немодифицируемая, непостоянная область, где хранятся аргументы функции, и ведет себя в основном как память.
+
+EN
+Note
+If you can, try to use calldata as data location because it will avoid copies and also makes sure that the data cannot be modified. Arrays and structs with calldata data location can also be returned from functions, but it is not possible to allocate such types.
+
+RU
+> <c>ℹ️ Примечание</c>
+Если есть возможность, старайтесь использовать `calldata` в качестве места хранения данных, так как это позволяет избежать копированя и гарантирует, что данные не могут быть изменены. Массивы и структуры расположенные в `calldata` также могут быть возвращены из функций, но `allocate`(выделить память) такие типы невозможно.
+
+EN
+Note
+Prior to version 0.6.9 data location for reference-type arguments was limited to calldata in external functions, memory in public functions and either memory or storage in internal and private ones. Now memory and calldata are allowed in all functions regardless of their visibility.
+
+RU
+> <c>ℹ️ Примечание</c>
+До версии 0.6.9 место хранения данных для ссылочного типа было огранично областью `calldata` во внешних функция, `memory` в публичных функциях, и либо `memory`, либо `storage` во внутренних и приватных функцияъ. Теперь `memory` и `calldata` разрешены во всех функциях, независимо от их видимости.
+
+EN
+Note
+Prior to version 0.5.0 the data location could be omitted, and would default to different locations depending on the kind of variable, function type, etc., but all complex types must now give an explicit data location.
+
+RU
+> <c>ℹ️ Примечание</c>
+До версии 0.5.0 расположение данных могло быть неуказанно, и по умолчанию задавалось различное расположение данных в зависимости от типа переменной, типа функции и т.д., но теперь все сложные типы должны указывать явное расположение данных.
+
+### Data location and assignment behaviour
+### Место хранения данных и поведение в присваивании
+
+EN
+Data locations are not only relevant for persistency of data, but also for the semantics of assignments:
+- Assignments between storage and memory (or from calldata) always create an independent copy.
+- Assignments from memory to memory only create references. This means that changes to one memory variable are also visible in all other memory variables that refer to the same data.
+- Assignments from storage to a local storage variable also only assign a reference.
+- All other assignments to storage always copy. Examples for this case are assignments to state variables or to members of local variables of storage struct type, even if the local variable itself is just a reference.
+
+EN
+Область хранения данных имеет значение не только для постоянства данных (?), но и для семантики присваивания:
+- Присваивания между `storage` и `memory`(или из `calldata`) всегда создают независимую копию.
+- Присваивания из `memory` в `memory` создают только ссылки. Это означает, что изменения в одной переменной памяти, также отражаются на всех других переменных памяти, которые ссылаются на те же данные.
+- Присваивания из `storage` в локальную область хранения переменной также присваивает только ссылку.
+- Все остальные присваивания в `storage` всегда копируются. Примерами такого случая являются присваивания в переменные состояния или членам локальных переменных типа `storage struct`, даже если сама локальная является простой ссылкой.
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.5.0 <0.9.0;
+
+contract C {
+    // The data location of x is storage.
+    // This is the only place where the
+    // data location can be omitted.
+    // Данные переменной `x` разположены в `storage`
+    // Это единственная место, где
+    // область памяти может быть неуказана/опущена.
+    uint[] x;
+
+    // The data location of memoryArray is memory.
+    // Область хранения данных для `memoryArray` является `memory`.
+    function f(uint[] memory memoryArray) public {
+        x = memoryArray; //Работает, копирует весь массив в `storage` // works, copies the whole array to storage
+        uint[] storage y = x; // работает, присваивает указатель, местом хранения данных для `y` является `storage` // works, assigns a pointer, data location of y is storage
+        y[7]; //хорошо, возвращает 8-й элемент // fine, returns the 8th element
+        y.pop(); //хорошо, изменяет `x` через `y`  // fine, modifies x through y
+        delete x; // хорошо, очищает массив, также модифицирует `y` fine, clears the array, also modifies y
+        // The following does not work; it would need to create a new temporary /
+        // unnamed array in storage, but storage is "statically" allocated:
+        // y = memoryArray;
+        // Similarly, "delete y" is not valid, as assignments to local variables
+        // referencing storage objects can only be made from existing storage objects.
+        // It would "reset" the pointer, but there is no sensible location it could point to.
+        // For more details see the documentation of the "delete" operator.
+        // delete y;
+
+        // Следующий рассматриваемый вариант не работает;  нужно создать новый временный массив
+        // безымянный массив в `storage`, но `storage` выделяется "статически"
+        // y = memoryArray;
+        // Аналогично, `delete y` не работает, так как присваивание локальным переменным
+        // ссылающимся на объекты хранения, могут быть сделаны только из существующих
+        // объектов хранения
+        // Это "сбросить" указатель, но нет никакого разумного места, на которое он бы указывал.
+        // Для более подробной ифнформации смотрите документацию оператора "delete"
+        // delete y;
+        g(x);// вызывает `g`, передавая ссылку на `x` // calls g, handing over a reference to x
+        h(x);// вызывает `h` и создает независимую временную копию в `memory` // calls h and creates an independent, temporary copy in memory
+    }
+
+    function g(uint[] storage) internal pure {}
+    function h(uint[] memory) public pure {}
+}
+```

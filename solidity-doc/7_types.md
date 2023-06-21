@@ -1467,3 +1467,656 @@ contract C {
     function h(uint[] memory) public pure {}
 }
 ```
+
+### Arrays
+### Массивы
+
+EN
+Arrays can have a compile-time fixed size, or they can have a dynamic size.
+
+RU
+Массивы могут иметь фиксированный размер при компиляции, или они могут иметь динамический размер.
+
+EN
+The type of an array of fixed size k and element type T is written as T[k], and an array of dynamic size as T[].
+
+RU
+Массив фиксированного размера-`k` и элемента типа `T` записывается как `T[k]`, а массив динамического размера - как `T[]`.
+
+EN
+For example, an array of 5 dynamic arrays of uint is written as uint[][5]. The notation is reversed compared to some other languages. In Solidity, X[3] is always an array containing three elements of type X, even if X is itself an array. This is not the case in other languages such as C.
+
+RU
+Например, массив из 5 динамических массивов `uint` записывается как `uint[][5]`. Эта нотация является обратной по сравнению с некоторыми другими языками. В Solidity, `X[3]` всегда является массивом, содержащим три элемента типа `X`, даже если `X` сам является массивом. В других языка это работает не так, например, в языке C.
+
+EN
+Indices are zero-based, and access is in the opposite direction of the declaration.
+
+RU
+Индексы основаны на нуле, а доступ осуществляется в направлении, противоположном объявлению.
+
+EN
+For example, if you have a variable uint[][5] memory x, you access the seventh uint in the third dynamic array using x[2][6], and to access the third dynamic array, use x[2]. Again, if you have an array T[5] a for a type T that can also be an array, then a[2] always has type T.
+
+RU
+Например, если у вас есть переменная `uint[][5] memory x`, и вы обращаетесь к седьмому `uint` в третьем динамическом массиве, используя `x[2][6]`, а для доступа к третьему динамическому массиву используйте `x[2]`. Опять же, если у вас есть массив `T[5] a` типа `T`, который при этом может быть отдельным массивом, то `a[2]` всегда имеет тип `T`.
+
+EN
+Array elements can be of any type, including mapping or struct. The general restrictions for types apply, in that mappings can only be stored in the storage data location and publicly-visible functions need parameters that are ABI types.
+
+RU
+Элементы массива могут быть любого типа, включая `Mapping`(Сопоставление) и Стуктура. Применяются общие ограничения для типов: Сопоставления могут храниться только в области хранения данных `storage`, а публичным-видимым функциям необходимы параметры, которые являются `ABI типами`.
+
+EN
+It is possible to mark state variable arrays public and have Solidity create a getter. The numeric index becomes a required parameter for the getter.
+
+RU
+Можно помечать массивы переменных состояния как `public` и заставить Solidity создавать `getter`. Числовой индекс становится обязательным параметром для геттера.
+
+EN
+Accessing an array past its end causes a failing assertion. Methods .push() and .push(value) can be used to append a new element at the end of a dynamically-sized array, where .push() appends a zero-initialized element and returns a reference to it.
+
+RU (check)
+Попытка доступа к массиву, через индекс превышающий длину массива, приводит к неудачному утверждению(assert). Методы `.push()` и `.push(value)` можно использовать для добавления нового элемента в конец динамического массива, при этом `.push()` добавляет инициализированный нулем элемент и возвращает ссылка на него.
+
+EN
+Note
+Dynamically-sized arrays can only be resized in storage. In memory, such arrays can be of arbitrary size but the size cannot be changed once an array is allocated.
+
+RU
+> <c>ℹ️ Примечание</c>
+Изменение размера динамического массива возможно только в `storage`. В `memory` такие массивы могут быть любого размера, но размер нельзся изменить после выделения(размещения) массива.
+
+### `bytes` and `string` as Arrays
+### `bytes` и `string` как Массивы
+
+EN
+Variables of type bytes and string are special arrays. The bytes type is similar to bytes1[], but it is packed tightly in calldata and memory. string is equal to bytes but does not allow length or index access.
+
+RU
+Переменные типа `bytes` и `string` - это специальные массивы. Тип `bytes` похож на `bytes1[]`, но он плотно упакован в `calldata` и `memory`. `string` равен `bytes`, но не предоставляет доступа по индексу и получения длины. (check)
+
+EN
+Solidity does not have string manipulation functions, but there are third-party string libraries. You can also compare two strings by their keccak256-hash using keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2)) and concatenate two strings using string.concat(s1, s2).
+
+RU
+Solidity не имеет функций для операций со строками, но существуют сторонние библиотеки для работы со строками. Вы также можете сравнить две строки по keccak256-хэшу с помощью `keccak256(abi.encodePacked(s1)) == keccak256(abi.encodePacked(s2))` и объединить две строки командой `string.concat(s1, s2)`.
+
+EN
+You should use bytes over bytes1[] because it is cheaper, since using bytes1[] in memory adds 31 padding bytes between the elements. Note that in storage, the padding is absent due to tight packing, see bytes and string. As a general rule, use bytes for arbitrary-length raw byte data and string for arbitrary-length string (UTF-8) data. If you can limit the length to a certain number of bytes, always use one of the value types bytes1 to bytes32 because they are much cheaper.
+
+RU
+Вам следует использовать`bytes` вместо `bytes1[]`, поскольку это дешевле, так как использование `bytes1[]` добавляет в `memory` 31 байт отступов(padding) между элементами. Обратите внимание, что при хранении в `storage` байты отступов отсутствуют из-за плотной упаковки(расположения), см. раздел "Байты и Строки". Как общее правило, используйте `bytes` для необработанных байтовых данных произвольной длины и `string` для строковых данных произвольной длины (UTF-8). Если Вы можете ограничить длину определенным количеством байт, всегда используйте один из типов значений от `bytes1` до `bytes32`, поскольку они намного дешевле.
+
+EN
+Note
+If you want to access the byte-representation of a string s, use bytes(s).length / bytes(s)[7] = 'x';. Keep in mind that you are accessing the low-level bytes of the UTF-8 representation, and not the individual characters.
+
+RU
+> <c>ℹ️ Примечание</c> \
+Если вы хотите получить доступ к байтовому представлению строки `s`, используйте `bytes(s).length`/`bytes(s)[7] = 'x';`. Помните, что вы обращаетесь к низкоуровневым байтам представления в формате UTF-8, а не к отдельным символам.
+
+### The functions bytes.concat and string.concat
+### Функции `bytes.concat` и `string.concat`
+
+EN
+You can concatenate an arbitrary number of string values using string.concat. The function returns a single string memory array that contains the contents of the arguments without padding. If you want to use parameters of other types that are not implicitly convertible to string, you need to convert them to string first.
+
+RU
+Вы можете объединить произвольное количество строковых значений с помощью `string.concat`. Функция возвращает массив типа `string memory`, который состоит из содержимого аргументов без заполнителей(padding). Если вы хотите использовать параметры других типов, которые неявно не преобразуются в `string`, вам необходимо сначала конвертировать их в `string`.
+
+EN
+Analogously, the bytes.concat function can concatenate an arbitrary number of bytes or bytes1 ... bytes32 values. The function returns a single bytes memory array that contains the contents of the arguments without padding. If you want to use string parameters or other types that are not implicitly convertible to bytes, you need to convert them to bytes or bytes1/…/bytes32 first.
+
+RU
+Аналогично, функция `bytes.concat` может объединять приозволное количесто `bytes` или значений `bytes1 ... bytes32`. Функция возвращает массив типа `bytes memory`, которые состоит из содержимого аргументов `bytes` без отступов(padding). Если вы хотите использовать параметры других типов, которые неявно не преобразуются в `bytes`, вам необходимо сначала конвертировать их в `bytes` или `bytes1`/`bytes32`
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.12;
+
+contract C {
+    string s = "Storage";
+    function f(bytes calldata bc, string memory sm, bytes16 b) public view {
+        string memory concatString = string.concat(s, string(bc), "Literal", sm);
+        assert((bytes(s).length + bc.length + 7 + bytes(sm).length) == bytes(concatString).length);
+
+        bytes memory concatBytes = bytes.concat(bytes(s), bc, bc[:2], "Literal", bytes(sm), b);
+        assert((bytes(s).length + bc.length + 2 + 7 + bytes(sm).length + b.length) == concatBytes.length);
+    }
+}
+```
+
+EN
+If you call string.concat or bytes.concat without arguments they return an empty array.
+
+RU
+При вызове `string.concat` или `bytes.concat` без аргументов, возвращается пустой массив.
+
+### Allocating Memory Arrays
+###
+
+EN
+Memory arrays with dynamic length can be created using the new operator. As opposed to storage arrays, it is not possible to resize memory arrays (e.g. the .push member functions are not available). You either have to calculate the required size in advance or create a new memory array and copy every element.
+
+RU
+Массивы типа `memory` с динамической длиной, могут создаваться с помощью оператора `new`. В отличие от массивов типа `storage`, размер `memory`-массива не возможно изменить (напр., функции-члены `.push` недоступны). Приходится либо заранее определять необходимый размер, либо создавать новый `memory`-массив и копировать каждый элемент.
+
+EN
+As all variables in Solidity, the elements of newly allocated arrays are always initialized with the default value.
+
+RU
+Как и все переменные в Solidity, элементы вновь расположенных в области хранения массивов, всегда инициализируются значениями по умолчанию.
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.16 <0.9.0;
+
+contract C {
+    function f(uint len) public pure {
+        uint[] memory a = new uint[](7);
+        bytes memory b = new bytes(len);
+        assert(a.length == 7);
+        assert(b.length == len);
+        a[6] = 8;
+    }
+}
+```
+
+### Array Literals
+### Литералы массива
+
+EN
+An array literal is a comma-separated list of one or more expressions, enclosed in square brackets ([...]). For example [1, a, f(3)]. The type of the array literal is determined as follows:
+
+RU
+Литерал массива - это список одного или нескольких выражений, разделенных запятыми и заключенными в квадратные скобки (`[...]`). Например, `[, a, f(3)]`. Тип литерала массива определяется следующим образом:
+
+EN
+It is always a statically-sized memory array whose length is the number of expressions.
+
+RU
+Это всегда `memory`-массив статического размера, длина которого ровна количеству выражений.
+
+EN
+The base type of the array is the type of the first expression on the list such that all other expressions can be implicitly converted to it. It is a type error if this is not possible.
+
+RU
+Базовый тип массива - это тип первого выражения в списке, так что все остальные выражения могут быть неявно преобразованы к нему. Если это невозможно, то это является ошибкой типа.
+
+EN
+It is not enough that there is a type all the elements can be converted to. One of the elements has to be of that type.
+
+RU
+Недостаточно, чтоб все элементы были преобразованы к какому-либо типу. Один из элементов должен быть такого типа.
+
+EN
+In the example below, the type of [1, 2, 3] is uint8[3] memory, because the type of each of these constants is uint8. If you want the result to be a uint[3] memory type, you need to convert the first element to uint.
+
+RU
+В приведенном ниже примере, типом `[1, 2, 3]` является `uint8[3] memory`, потому что тип каждой из этих констант - `uint8`. Если вы хотите, чтобы результатом был тип `uint[3] memory`, вам необходимо преобразовать первый элемент в `uint`.
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.16 <0.9.0;
+
+contract C {
+    function f() public pure {
+        g([uint(1), 2, 3]);
+    }
+    function g(uint[3] memory) public pure {
+        // ...
+    }
+}
+```
+
+EN
+The array literal [1, -1] is invalid because the type of the first expression is uint8 while the type of the second is int8 and they cannot be implicitly converted to each other. To make it work, you can use [int8(1), -1], for example.
+
+RU
+Литеральный массив `[1, -1]` недействителен, потому что тип первого элемента - `uint8[3] memory`, а второго - `int8`, и они не могут быть неявно конвертированы друг в друга. Чтобы все работало, вы можете использовать, например, `[int8(1), -1]`.
+
+EN
+Since fixed-size memory arrays of different type cannot be converted into each other (even if the base types can), you always have to specify a common base type explicitly if you want to use two-dimensional array literals:
+
+RU
+Поскольку `memory`-массивы фиксированного размера разного типа не могут быть преобразованы друг в друга (даже если базовые типы могут), вам обязательно нужно всегда явно указывать общий базовый тип, если хотите использовать литералы двумерных массивов: 
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.16 <0.9.0;
+
+contract C {
+    function f() public pure returns (uint24[2][4] memory) {
+        uint24[2][4] memory x = [[uint24(0x1), 1], [0xffffff, 2], [uint24(0xff), 3], [uint24(0xffff), 4]];
+        // The following does not work, because some of the inner arrays are not of the right type.
+        // uint[2][4] memory x = [[0x1, 1], [0xffffff, 2], [0xff, 3], [0xffff, 4]];
+        // Следующий закомментированный код не работает, т.к. некоторые из вложенных массивов имеют
+        // неправильный тип.
+        // uint[2][4] memory x = [[0x1, 1], [0xffffff, 2], [0xff, 3], [0xffff, 4]];
+        return x;
+    }
+}
+```
+
+EN
+Fixed size memory arrays cannot be assigned to dynamically-sized memory arrays, i.e. the following is not possible:
+
+RU
+`memory`-массивы фиксированного размера не могут быть присвоены `memory`-массивам динамического размера, т.е. следующее невозможно:
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.0 <0.9.0;
+
+// This will not compile.
+// Это не скомпилируется.
+contract C {
+    function f() public {
+        // The next line creates a type error because uint[3] memory
+        // cannot be converted to uint[] memory.
+        // Следующая строка кода приведет к ошибке, т.к. `uint[3] memory`
+        // не может быть конвертировано в `uint[] memory`
+        uint[] memory x = [uint(1), 3, 4];
+    }
+}
+```
+
+EN
+It is planned to remove this restriction in the future, but it creates some complications because of how arrays are passed in the ABI.
+
+RU
+В будущем планируется снять это ограничение, но оно создает некоторые сложности из-за того, как массивы передаются в ABI.
+
+EN
+If you want to initialize dynamically-sized arrays, you have to assign the individual elements:
+
+RU
+Если вы хотите инициализировать массивы динамического размера, вам придется присваивать отдельные элементы:
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.16 <0.9.0;
+
+contract C {
+    function f() public pure {
+        uint[] memory x = new uint[](3);
+        x[0] = 1;
+        x[1] = 3;
+        x[2] = 4;
+    }
+}
+```
+
+### Array Members
+### Функции-члены массива
+
+EN
+length:
+    Arrays have a length member that contains their number of elements. The length of memory arrays is fixed (but dynamic, i.e. it can depend on runtime parameters) once they are created.
+
+push():
+    Dynamic storage arrays and bytes (not string) have a member function called push() that you can use to append a zero-initialised element at the end of the array. It returns a reference to the element, so that it can be used like x.push().t = 2 or x.push() = b.
+
+push(x):
+    Dynamic storage arrays and bytes (not string) have a member function called push(x) that you can use to append a given element at the end of the array. The function returns nothing.
+
+pop():
+    Dynamic storage arrays and bytes (not string) have a member function called pop() that you can use to remove an element from the end of the array. This also implicitly calls delete on the removed element. The function returns nothing.
+
+RU
+length:
+- Массивы имеют свойство `length`, которое содержит количество элементов. Длина `memory`-массивов фиксирована (но динамичная, т.е. может зависеть от параметров среды выполнения) после из создания.
+
+push():
+- Динамические `storage`-массивы и `bytes` (не `string`) имеют функцию-член `push()`, которую можно использовать для добавления инициализированного нулем элемента в конец массива. Она возвращает ссылку на элемент, и его можно использовать, например, как `x.push().t = 2` или `x.push() = b`.
+
+push(x):
+- Динамические `storage`-массивы и `bytes` (не `string`) имеют функцию-член `push(x)`, которую можно использовать для добавления заданного элемента в конец массива. Функция ничего не возвращает.
+
+pop():
+- Динамические `storage`-массивы и `bytes` (не `string`) имеют функцию-член `pop()`, которую можно использовать для удаления элемента из конца массива. При этом также неявно вызывается `delete` для удаленного элемента. Функция ничего не возвращает.
+
+EN
+Note
+Increasing the length of a storage array by calling push() has constant gas costs because storage is zero-initialised, while decreasing the length by calling pop() has a cost that depends on the “size” of the element being removed. If that element is an array, it can be very costly, because it includes explicitly clearing the removed elements similar to calling delete on them.
+
+RU
+> <c>ℹ️ Примечание</c> \
+Увеличение длины `storage`-массива путем вызова `push()` приводит затратам газа, поскольку `storage` инициализируется нулем, а уменьшение длины массива путем вызова `pop()` затратно, затраты зависят от "размера" удаляемого элемента. Если этот элемент является массивом, это может стоить очень дорого, поскольку включает явную очистку удаленных элементов, аналогичную вызову `delete`.
+
+EN
+Note
+To use arrays of arrays in external (instead of public) functions, you need to activate ABI coder v2.
+
+RU
+> <c>ℹ️ Примечание</c> \
+Чтобы использовать массивы массивов во внешних (а не публичных) функциях, необходимо активировать ABI coder v2.
+
+EN
+Note
+In EVM versions before Byzantium, it was not possible to access dynamic arrays return from function calls. If you call functions that return dynamic arrays, make sure to use an EVM that is set to Byzantium mode.
+
+RU
+> <c>ℹ️ Примечание</c> \
+В версиях EVM до Byzantium, было невозможно получить доступ к динамическим массивам, возвращаемым из вызовов функций. Если вы вызываете функции, возвращающие динамические массивы, убедитесь, что используете EVM в режиме Byzantium.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.6.0 <0.9.0;
+
+contract ArrayContract {
+    uint[2**20] aLotOfIntegers;
+    // Note that the following is not a pair of dynamic arrays but a
+    // dynamic array of pairs (i.e. of fixed size arrays of length two).
+    // In Solidity, T[k] and T[] are always arrays with elements of type T,
+    // even if T itself is an array.
+    // Because of that, bool[2][] is a dynamic array of elements
+    // that are bool[2]. This is different from other languages, like C.
+    // Data location for all state variables is storage.
+    // Обратите внимание, что ниже приведена не пара динамических массиов, а
+    // динамический массив пар (т.е. массивы фиксированного размера с длиной 2 элемента)
+    // В Solidity `T[k]` и `T[]` всегдя являются массивами с элементами типа `T`,
+    // даже если `T` сам явялется массивом.
+    // Поэтому `bool[2][]` - это динамический массив элементов, которые являются bool[2].
+    // Этим отличается от других языков, таких как C.
+    // Область хранения данных для всех переменных состояния является `storage`.
+    bool[2][] pairsOfFlags;
+
+    // newPairs is stored in memory - the only possibility
+    // for public contract function arguments
+    // `newPairs` хранится в `memory` - единственный возможный вариант
+    // для аргументов публичной функции контракта.
+    function setAllFlagPairs(bool[2][] memory newPairs) public {
+        // assignment to a storage array performs a copy of ``newPairs`` and
+        // replaces the complete array ``pairsOfFlags``.
+        // присваивание `storage`-массиву `memory`-массива приводить к копированию `newPairs`
+        // и полной замене массива `pairsOfFlags`.
+        pairsOfFlags = newPairs;
+    }
+
+    struct StructType {
+        uint[] contents;
+        uint moreInfo;
+    }
+    StructType s;
+
+    function f(uint[] memory c) public {
+        // stores a reference to ``s`` in ``g``
+        // сохраняет ссылку на ``s`` в переменной ``g``
+        StructType storage g = s;
+        // also changes ``s.moreInfo``.
+        // также изменяет значение совйства ``s.moreInfo`` через ``g``.
+        g.moreInfo = 2;
+        // assigns a copy because ``g.contents``
+        // is not a local variable, but a member of
+        // a local variable.
+        // присваиваем копию, потому что ``g.contents``
+        // является не локальной переменной, а членом локальной переменной.
+        g.contents = c;
+    }
+
+    function setFlagPair(uint index, bool flagA, bool flagB) public {
+        // access to a non-existing index will throw an exception
+        // обращение к несуществующему индексу вызовет исключение
+        pairsOfFlags[index][0] = flagA;
+        pairsOfFlags[index][1] = flagB;
+    }
+
+    function changeFlagArraySize(uint newSize) public {
+        // using push and pop is the only way to change the
+        // length of an array
+        // использование `push` и `pop` - единственный способ
+        // изменить длину массива
+        if (newSize < pairsOfFlags.length) {
+            while (pairsOfFlags.length > newSize)
+                pairsOfFlags.pop();
+        } else if (newSize > pairsOfFlags.length) {
+            while (pairsOfFlags.length < newSize)
+                pairsOfFlags.push();
+        }
+    }
+
+    function clear() public {
+        // these clear the arrays completely
+        // эти функции полностью очищают массивы
+        delete pairsOfFlags;
+        delete aLotOfIntegers;
+        // identical effect here
+        // идентичный эффект
+        pairsOfFlags = new bool[2][](0);
+    }
+
+    bytes byteData;
+
+    function byteArrays(bytes memory data) public {
+        // byte arrays ("bytes") are different as they are stored without padding,
+        // but can be treated identical to "uint8[]"
+        // массивы байтов ("bytes") отличается тем, что хранятся без `padding`(? отступов между байтоами)
+        // но работа с ними аналогична работе с `uint8[]`
+        byteData = data;
+        for (uint i = 0; i < 7; i++)
+            byteData.push();
+        byteData[3] = 0x08;
+        delete byteData[2];
+    }
+
+    function addFlag(bool[2] memory flag) public returns (uint) {
+        pairsOfFlags.push(flag);
+        return pairsOfFlags.length;
+    }
+
+    function createMemoryArray(uint size) public pure returns (bytes memory) {
+        // Dynamic memory arrays are created using `new`:
+        // Динамические `memory`-массивы создаются с помощью `new`:
+        uint[2][] memory arrayOfPairs = new uint[2][](size);
+
+        // Inline arrays are always statically-sized and if you only
+        // use literals, you have to provide at least one type.
+        // Inline-массивы всегда имеют статический размер, и если вы только
+        // используете литералы, вы должны указать хотя бы один тип.
+        arrayOfPairs[0] = [uint(1), 2];
+
+        // Create a dynamic byte array:
+        // Создаем динамический массив байтов:
+        bytes memory b = new bytes(200);
+        for (uint i = 0; i < b.length; i++)
+            b[i] = bytes1(uint8(i));
+        return b;
+    }
+}
+```
+
+### Dangling References to Storage Array Elements
+### Висячие ссылки на элементы `storage`-массива
+
+EN
+When working with storage arrays, you need to take care to avoid dangling references. A dangling reference is a reference that points to something that no longer exists or has been moved without updating the reference. A dangling reference can for example occur, if you store a reference to an array element in a local variable and then .pop() from the containing array:
+
+RU
+При работе со `storage`-массивами необходимо стараться избегать висячик ссылок. Висячая ссылка - это ссылка, которая указывает на что-то, что больше не существует или было перемещено без обновления ссылки. Висячая ссылка может возникнуть, например, если вы сохраните ссылку на элемент массива в локальную переменную, а затем примените `.pop()` к массиву, содержащему этот элемент.
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.0 <0.9.0;
+
+contract C {
+    uint[][] s;
+
+    function f() public {
+        // Stores a pointer to the last array element of s.
+        // Сохраняем указатель на последний элемент массива `s`.
+        uint[] storage ptr = s[s.length - 1];
+        // Removes the last array element of s.
+        // Удаляем последний элемент массива `s`.
+        s.pop();
+        // Writes to the array element that is no longer within the array.
+        // Записываем в массив новый элемент, которой больше ему не принадлежит.
+        ptr.push(0x42);
+        // Adding a new element to ``s`` now will not add an empty array, but
+        // will result in an array of length 1 with ``0x42`` as element.
+        // Добавление нового элемента в ``s``, теперь не добавляется пустой массив, но
+        // получим массив длины = 1 с ``0x42`` в качестве элемента.
+        s.push();
+        assert(s[s.length - 1][0] == 0x42);
+    }
+}
+```
+
+EN
+The write in ptr.push(0x42) will not revert, despite the fact that ptr no longer refers to a valid element of s. Since the compiler assumes that unused storage is always zeroed, a subsequent s.push() will not explicitly write zeroes to storage, so the last element of s after that push() will have length 1 and contain 0x42 as its first element.
+
+RU
+Запись `ptr.push(0x42)` не откатится, несмотря на то, что `ptr` больше не ссылается на допустимый элемент `s`. Поскольку компилятор предполагает, что неиспользуемое `storage` всегда обнуляется, последующий `s.push()` не будет явно записывать нули в `storage`, поэтому последний элемент `s` после этого `push()` будет иметь длину = `1` и содержать `0x42` в качестве первого элемента.
+
+
+EN
+Note that Solidity does not allow to declare references to value types in storage. These kinds of explicit dangling references are restricted to nested reference types. However, dangling references can also occur temporarily when using complex expressions in tuple assignments:
+
+RU
+Обратите внимание, что Solidity не позволяет объявлять ссылки на типы значений в `storage`. Такие явные висячие ссылки ограничены вложенными ссылочными типами. Однако висячие ссылки могут возникать и временно при использовании сложных выражений в присваиваниях кортежей:
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.0 <0.9.0;
+
+contract C {
+    uint[] s;
+    uint[] t;
+    constructor() {
+        // Push some initial values to the storage arrays.
+        // Поместим некоторые начальные значения в `storage`-массивы
+        s.push(0x07);
+        t.push(0x03);
+    }
+
+    function g() internal returns (uint[] storage) {
+        s.pop();
+        return t;
+    }
+
+    function f() public returns (uint[] memory) {
+        // The following will first evaluate ``s.push()`` to a reference to a new element
+        // at index 1. Afterwards, the call to ``g`` pops this new element, resulting in
+        // the left-most tuple element to become a dangling reference. The assignment still
+        // takes place and will write outside the data area of ``s``.
+        // Следующая функция сначала преобразует ``s.push()`` в ссылку на новый элемент 
+        // по индексу 1. После этого, вызов ``g`` вытолкнет этот новый элемент, в результате чего
+        // самый левый элемент кортежа станет висячей ссылкой. Присвоение все еще
+        // имеет место и буде записано за пределами области данных ``s``.
+        (s.push(), g()[0]) = (0x42, 0x17);
+        // A subsequent push to ``s`` will reveal the value written by the previous
+        // statement, i.e. the last element of ``s`` at the end of this function will have
+        // the value ``0x42``.
+        //  Последующие `push` в ``s`` откроет значение, записанное предыдущим оператором,
+        // т.е. последний элемент ``s`` в конце этой функции будет имет значение ``0x42``.
+        s.push();
+        return s;
+    }
+}
+```
+
+EN
+It is always safer to only assign to storage once per statement and to avoid complex expressions on the left-hand-side of an assignment.
+
+RU
+
+
+EN
+You need to take particular care when dealing with references to elements of bytes arrays, since a .push() on a bytes array may switch from short to long layout in storage.
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.0 <0.9.0;
+
+// This will report a warning
+contract C {
+    bytes x = "012345678901234567890123456789";
+
+    function test() external returns(uint) {
+        (x.push(), x.push()) = (0x01, 0x02);
+        return x.length;
+    }
+}
+```
+
+EN
+Here, when the first x.push() is evaluated, x is still stored in short layout, thereby x.push() returns a reference to an element in the first storage slot of x. However, the second x.push() switches the bytes array to large layout. Now the element that x.push() referred to is in the data area of the array while the reference still points at its original location, which is now a part of the length field and the assignment will effectively garble the length of x. To be safe, only enlarge bytes arrays by at most one element during a single assignment and do not simultaneously index-access the array in the same statement.
+
+RU
+
+EN
+While the above describes the behaviour of dangling storage references in the current version of the compiler, any code with dangling references should be considered to have undefined behaviour. In particular, this means that any future version of the compiler may change the behaviour of code that involves dangling references.
+
+RU
+
+EN
+Be sure to avoid dangling references in your code!
+
+RU
+
+### Array Slices
+###
+
+EN
+Array slices are a view on a contiguous portion of an array. They are written as x[start:end], where start and end are expressions resulting in a uint256 type (or implicitly convertible to it). The first element of the slice is x[start] and the last element is x[end - 1].
+
+RU
+
+EN
+If start is greater than end or if end is greater than the length of the array, an exception is thrown.
+
+RU
+
+EN
+Both start and end are optional: start defaults to 0 and end defaults to the length of the array.
+
+RU
+
+EN
+Array slices do not have any members. They are implicitly convertible to arrays of their underlying type and support index access. Index access is not absolute in the underlying array, but relative to the start of the slice.
+
+RU
+
+EN
+Array slices do not have a type name which means no variable can have an array slices as type, they only exist in intermediate expressions.
+
+RU
+
+EN
+Note
+As of now, array slices are only implemented for calldata arrays.
+
+RU
+
+EN
+Array slices are useful to ABI-decode secondary data passed in function parameters:
+
+RU
+
+```typescript
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.8.5 <0.9.0;
+contract Proxy {
+    /// @dev Address of the client contract managed by proxy i.e., this contract
+    address client;
+
+    constructor(address client_) {
+        client = client_;
+    }
+
+    /// Forward call to "setOwner(address)" that is implemented by client
+    /// after doing basic validation on the address argument.
+    function forward(bytes calldata payload) external {
+        bytes4 sig = bytes4(payload[:4]);
+        // Due to truncating behaviour, bytes4(payload) performs identically.
+        // bytes4 sig = bytes4(payload);
+        if (sig == bytes4(keccak256("setOwner(address)"))) {
+            address owner = abi.decode(payload[4:], (address));
+            require(owner != address(0), "Address of owner cannot be zero.");
+        }
+        (bool status,) = client.delegatecall(payload);
+        require(status, "Forwarded call failed.");
+    }
+}
+```

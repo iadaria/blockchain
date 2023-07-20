@@ -2020,10 +2020,13 @@ EN
 It is always safer to only assign to storage once per statement and to avoid complex expressions on the left-hand-side of an assignment.
 
 RU
-
+Безопаснее всего выполнять присваивание `storage` только один раз (?) и избегать сложных выражений в левой части присваивания.
 
 EN
 You need to take particular care when dealing with references to elements of bytes arrays, since a .push() on a bytes array may switch from short to long layout in storage.
+
+RU
+Особую осторожность следует проявлять при работе со ссылками на элементы байтовых массивов, так как при выполнении операции `push()` для байтового массива, возможен переход от короткой к длинной (?)layout в `storage`.
 
 ```typescript
 // SPDX-License-Identifier: GPL-3.0
@@ -2044,61 +2047,73 @@ EN
 Here, when the first x.push() is evaluated, x is still stored in short layout, thereby x.push() returns a reference to an element in the first storage slot of x. However, the second x.push() switches the bytes array to large layout. Now the element that x.push() referred to is in the data area of the array while the reference still points at its original location, which is now a part of the length field and the assignment will effectively garble the length of x. To be safe, only enlarge bytes arrays by at most one element during a single assignment and do not simultaneously index-access the array in the same statement.
 
 RU
+Здесь при выполнении первого `x.push()`, массив `x` по-прежнему хранится в `short layout`, поэтому `x.push()` возвращает ссылку на элемент в первом слоте области `storage` `x`. Однако второй `x.push()` переводит массив байтов в `large layout`. Теперь элемент, на который ссылается `x.push()`, находится в области данных массива, а ссылка по-прежнему указывает на его исходное местоположение, которое теперь является частью поля length, и присваивание фактически искажает длину `x`. Чтобы быть уверенным, увеличиваете байтовые массивы не более чем на один элемент за одно присваивание и не выполняйте это одновременно с обращением к массиву по индексу в одном и том же операторе. (?)
 
 EN
 While the above describes the behaviour of dangling storage references in the current version of the compiler, any code with dangling references should be considered to have undefined behaviour. In particular, this means that any future version of the compiler may change the behaviour of code that involves dangling references.
 
 RU
+Хотя мы описали поведение висячих ссылок на `storage` в текущей версии компилятора, любой код с висячими ссылками следует рассматривать как имеющий неопределенное поведение. В частности, это означает, что любая будущая версия компилятора может изменить поведение кода, содержащего висячие ссылки.
 
 EN
 Be sure to avoid dangling references in your code!
 
 RU
+Поэтому старайтесь избегать висячих ссылок в своем коде!
 
 ### Array Slices
-###
+### Срезы массива
 
 EN
 Array slices are a view on a contiguous portion of an array. They are written as x[start:end], where start and end are expressions resulting in a uint256 type (or implicitly convertible to it). The first element of the slice is x[start] and the last element is x[end - 1].
 
 RU
+Срезы массива - (?). Они записываются в виде `x[начало:конец]`, где `start` и `end` - выражения, приводящие (?) к типу `uint256` (или неявно преобразуемые к нему). Первый элемент среза - `x[start]`, а последний `x[end-1]`.
 
 EN
 If start is greater than end or if end is greater than the length of the array, an exception is thrown.
 
 RU
+Если `start` больше чем `end` или если `end` больше длины массива, то будет вызвано исключение.
 
 EN
 Both start and end are optional: start defaults to 0 and end defaults to the length of the array.
 
 RU
+И `start` и `end` необязательны: начало по умолчанию равно 0, а конец - длине массива.
 
 EN
 Array slices do not have any members. They are implicitly convertible to arrays of their underlying type and support index access. Index access is not absolute in the underlying array, but relative to the start of the slice.
 
 RU
+Срезы массива не имют блольше никаких свойств(?). Они неявно преобразуются в массивы своего базового типа и поддерживают индексный доступ. При этом доступ по индексу осуществляется не абсолютно, а относительно начала фрагмента.
 
 EN
 Array slices do not have a type name which means no variable can have an array slices as type, they only exist in intermediate expressions.
 
 RU
+Срезы массива не имеют названия типа, поэтому ни одна переменная не может иметь в качестве типа срез массива, они существуют только в промежуточных выражениях.
 
 EN
 Note
 As of now, array slices are only implemented for calldata arrays.
 
 RU
+> <c>ℹ️ Примечание</c>
+В настоящее время, срезы массива реализуются только для `calldata`-массивов.
 
 EN
 Array slices are useful to ABI-decode secondary data passed in function parameters:
 
 RU
+Срезы полезны для ABI-декодирования вторичных данных, передаваемых в параметрах функций:
 
 ```typescript
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity >=0.8.5 <0.9.0;
 contract Proxy {
     /// @dev Address of the client contract managed by proxy i.e., this contract
+    /// @dev Адрес клиентского контракта, управляемого по доверенности, т/е этого контракта
     address client;
 
     constructor(address client_) {
@@ -2107,9 +2122,13 @@ contract Proxy {
 
     /// Forward call to "setOwner(address)" that is implemented by client
     /// after doing basic validation on the address argument.
+    /// Переадресация вызова "setOwner(address)", который реалзован клиентом
+    /// после выполнения базовой проверки аргумента `address`.
     function forward(bytes calldata payload) external {
         bytes4 sig = bytes4(payload[:4]);
         // Due to truncating behaviour, bytes4(payload) performs identically.
+        // bytes4 sig = bytes4(payload);
+        // Из-за проведения усечения, bytes4(payload) работает идентично.
         // bytes4 sig = bytes4(payload);
         if (sig == bytes4(keccak256("setOwner(address)"))) {
             address owner = abi.decode(payload[4:], (address));
@@ -2120,3 +2139,130 @@ contract Proxy {
     }
 }
 ```
+### Structs
+### Стуктуры
+
+EN
+Solidity provides a way to define new types in the form of structs, which is shown in the following example:
+
+RU
+Solidity предоствляет способ для определения новых типов в виде структур, которые представлены следующем примере
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.6.0 <0.9.0;
+
+// Defines a new type with two fields.
+// Declaring a struct outside of a contract allows
+// it to be shared by multiple contracts.
+// Here, this is not really needed.
+// Объявляем новый тип с двумя полями.
+// Объявление структуры вне контракта позволяет
+// его использовать совместно с несколькими контрактами.
+// В данном случае в этом не было необходимости.
+struct Funder {
+    address addr;
+    uint amount;
+}
+
+contract CrowdFunding {
+    // Structs can also be defined inside contracts, which makes them
+    // visible only there and in derived contracts.
+    // Структуры также могут быть объявлены внутри контрактов, что делает их
+    // видимыми только в них и в производных контрактах.
+    struct Campaign {
+        address payable beneficiary;
+        uint fundingGoal;
+        uint numFunders;
+        uint amount;
+        mapping(uint => Funder) funders;
+    }
+
+    uint numCampaigns;
+    mapping(uint => Campaign) campaigns;
+
+    function newCampaign(address payable beneficiary, uint goal) public returns (uint campaignID) {
+        campaignID = numCampaigns++; // campaignID - возвращаемая переменная  // campaignID is return variable
+        // We cannot use "campaigns[campaignID] = Campaign(beneficiary, goal, 0, 0)"
+        // because the right hand side creates a memory-struct "Campaign" that contains a mapping.
+        // Мы не можем использовать "campaigns[campaignID] = Campaign(beneficiary, goal, 0, 0)"
+        // потому что в правой части создается memory-структура "Campaign", содержащая сопоставления.
+        Campaign storage c = campaigns[campaignID];
+        c.beneficiary = beneficiary;
+        c.fundingGoal = goal;
+    }
+
+    function contribute(uint campaignID) public payable {
+        Campaign storage c = campaigns[campaignID];
+        // Creates a new temporary memory struct, initialised with the given values
+        // and copies it over to storage.
+        // Note that you can also use Funder(msg.sender, msg.value) to initialise.
+        // Создаем временную структуру в памяти, инициализированную заданным значением
+        // и копируем ее в `storage` область.
+        // Обратите внимание, вы также можете использовать Funder(msg.sender, msg.value) для инициализации.
+        c.funders[c.numFunders++] = Funder({addr: msg.sender, amount: msg.value});
+        c.amount += msg.value;
+    }
+
+    function checkGoalReached(uint campaignID) public returns (bool reached) {
+        Campaign storage c = campaigns[campaignID];
+        if (c.amount < c.fundingGoal)
+            return false;
+        uint amount = c.amount;
+        c.amount = 0;
+        c.beneficiary.transfer(amount);
+        return true;
+    }
+}
+```
+
+EN
+The contract does not provide the full functionality of a crowdfunding contract, but it contains the basic concepts necessary to understand structs. Struct types can be used inside mappings and arrays and they can themselves contain mappings and arrays.
+
+RU
+Данный контракт не предоставляет полный функционал краудфандингого контракта, но содержит основные понятия, необходимые для понимания структур. Типы `struct` могут использоваться внутри `mapping` типов и массивов и сами структуры могут содержать `mapping` типы и массивы.
+
+>Краудфандинг (от англ. crowdfunding) — это способ коллективного финансирования проектов, при котором деньги на создание нового продукта поступают от его конечных потребителей.
+>Автор крауд-проекта может собрать средства на реализацию идеи и заранее оценить ее востребованность, а участник — сделать вклад в начинание автора и получить за это вознаграждение.
+
+EN
+It is not possible for a struct to contain a member of its own type, although the struct itself can be the value type of a mapping member or it can contain a dynamically-sized array of its type. This restriction is necessary, as the size of the struct has to be finite.
+
+RU
+Невозможно, чтобы структура содержала член своего собственного типа, хотя сама структура может может быть типом значения члена `mapping` или содержать динмически изменяемый массив своего типа. Это ограничение необходимо, так как размер структуры должен быть конечным.
+
+EN
+Note how in all the functions, a struct type is assigned to a local variable with data location storage. This does not copy the struct but only stores a reference so that assignments to members of the local variable actually write to the state.
+
+RU
+Обратите внимание, что во всех функциях, тип `struct` присваивается локальной переменной с данными расположенными в области `storage`. При этом стукртура не копируется, а только сохраняется ссылка, так что присваивания членам локальной переменной в действительности записываются в состояние.
+
+
+EN
+Of course, you can also directly access the members of the struct without assigning it to a local variable, as in campaigns[campaignID].amount = 0.
+
+RU
+Конечно,к членам структуры можно обращаться и напрямую, не присваивая ее локальной переменной, как, например, `campaigns[campaignID].amount = 0``.
+
+EN
+Note
+Until Solidity 0.7.0, memory-structs containing members of storage-only types (e.g. mappings) were allowed and assignments like campaigns[campaignID] = Campaign(beneficiary, goal, 0, 0) in the example above would work and just silently skip those members.
+
+RU
+> <c>ℹ️ Примечание</c>
+До версии Solidity 0.7.0 разрешалось использовать memory-структуры, содержащие только storage-члены (например, `mappings`), и присваивания типа `campaigns[campaingID] = Campaign(beneficiary, goal, 0, 0)` в приведенном примере работали и просто пропускали эти члены.
+
+Mapping Types
+
+Mapping types use the syntax mapping(KeyType KeyName? => ValueType ValueName?) and variables of mapping type are declared using the syntax mapping(KeyType KeyName? => ValueType ValueName?) VariableName. The KeyType can be any built-in value type, bytes, string, or any contract or enum type. Other user-defined or complex types, such as mappings, structs or array types are not allowed. ValueType can be any type, including mappings, arrays and structs. KeyName and ValueName are optional (so mapping(KeyType => ValueType) works as well) and can be any valid identifier that is not a type.
+
+You can think of mappings as hash tables, which are virtually initialised such that every possible key exists and is mapped to a value whose byte-representation is all zeros, a type’s default value. The similarity ends there, the key data is not stored in a mapping, only its keccak256 hash is used to look up the value.
+
+Because of this, mappings do not have a length or a concept of a key or value being set, and therefore cannot be erased without extra information regarding the assigned keys (see Clearing Mappings).
+
+Mappings can only have a data location of storage and thus are allowed for state variables, as storage reference types in functions, or as parameters for library functions. They cannot be used as parameters or return parameters of contract functions that are publicly visible. These restrictions are also true for arrays and structs that contain mappings.
+
+You can mark state variables of mapping type as public and Solidity creates a getter for you. The KeyType becomes a parameter with name KeyName (if specified) for the getter. If ValueType is a value type or a struct, the getter returns ValueType with name ValueName (if specified). If ValueType is an array or a mapping, the getter has one parameter for each KeyType, recursively.
+
+In the example below, the MappingExample contract defines a public balances mapping, with the key type an address, and a value type a uint, mapping an Ethereum address to an unsigned integer value. As uint is a value type, the getter returns a value that matches the type, which you can see in the MappingUser contract that returns the value at the specified address.
+

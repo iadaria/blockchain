@@ -1,3 +1,14 @@
 {
   "solidity-va.mode.active": true,
+  "grammarly.selectors": [
+    {
+      "language": "markdown",
+      "scheme": "file",
+      "pattern": "7_types.md"
+    }
+  ],
+  "cSpell.enableFiletypes": [
+    "markdown"
+  ],
+  "cSpell.language": "ru, en",
 }

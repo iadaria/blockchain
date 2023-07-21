@@ -2252,17 +2252,42 @@ RU
 > <c>ℹ️ Примечание</c>
 До версии Solidity 0.7.0 разрешалось использовать memory-структуры, содержащие только storage-члены (например, `mappings`), и присваивания типа `campaigns[campaingID] = Campaign(beneficiary, goal, 0, 0)` в приведенном примере работали и просто пропускали эти члены.
 
-Mapping Types
+### Mapping Types
+### Сопоставления
 
+EN
 Mapping types use the syntax mapping(KeyType KeyName? => ValueType ValueName?) and variables of mapping type are declared using the syntax mapping(KeyType KeyName? => ValueType ValueName?) VariableName. The KeyType can be any built-in value type, bytes, string, or any contract or enum type. Other user-defined or complex types, such as mappings, structs or array types are not allowed. ValueType can be any type, including mappings, arrays and structs. KeyName and ValueName are optional (so mapping(KeyType => ValueType) works as well) and can be any valid identifier that is not a type.
 
+RU
+`mapping(KeyType KeyName? => ValueType ValueName?)` `mapping(KeyType KeyName? => ValueType ValueName?) VariableName`. `KeyType` `bytes`, `string` `KeyName` `ValueName` (`mapping(KeyType => ValueType)`)
+
+EN
 You can think of mappings as hash tables, which are virtually initialised such that every possible key exists and is mapped to a value whose byte-representation is all zeros, a type’s default value. The similarity ends there, the key data is not stored in a mapping, only its keccak256 hash is used to look up the value.
 
+RU
+`keccak256`
+
+EN
 Because of this, mappings do not have a length or a concept of a key or value being set, and therefore cannot be erased without extra information regarding the assigned keys (see Clearing Mappings).
 
+RU
+В связи с этим, сопоставления не имеют длины и понятия/концепцию задаваемого ключа или значения и поэтому не могут быть удалены без дополнительной информации о заданных ключах (см раздел "Очитска Сопоставлений").
+
+EN
 Mappings can only have a data location of storage and thus are allowed for state variables, as storage reference types in functions, or as parameters for library functions. They cannot be used as parameters or return parameters of contract functions that are publicly visible. These restrictions are also true for arrays and structs that contain mappings.
 
+RU
+Сопоставления могут только располагаться в `storage` области и поэтому допустимы для переменных состояния, в качестве ссылочных типов в функциях или в качестве параметров библиотечных функций. Они не могут использоваться в качестве параметров или возвращаемых параметров контрактных функций, которые являются общедоступными(публичными). Эти ограничения справедливы для массивов и структур, содержащих сопоставления.
+
+EN
 You can mark state variables of mapping type as public and Solidity creates a getter for you. The KeyType becomes a parameter with name KeyName (if specified) for the getter. If ValueType is a value type or a struct, the getter returns ValueType with name ValueName (if specified). If ValueType is an array or a mapping, the getter has one parameter for each KeyType, recursively.
 
+
+RU
+`public` `getter` `KeyType` `KeyName` `ValueType` `ValueType` `ValueName` `Valuetype` `KeyType`
+
+EN
 In the example below, the MappingExample contract defines a public balances mapping, with the key type an address, and a value type a uint, mapping an Ethereum address to an unsigned integer value. As uint is a value type, the getter returns a value that matches the type, which you can see in the MappingUser contract that returns the value at the specified address.
 
+RU
+`MappingExample` `balances` `address` `uint` `uint` `MappingUser`

@@ -1368,7 +1368,7 @@ EN
 An assignment or type conversion that changes the data location will always incur an automatic copy operation, while assignments inside the same data location only copy in some cases for storage types.
 
 RU
-Присваивание и конвертирование типа, изменящее область хранения данных всегда влечет за собой операцию автоматического копирования, в то время как присваивания внутри одной и той же области хранения данных, коппируются только в некоторых случаях для типов `storage`.
+Присваивание и конвертирование типа, изменящее область хранения данных всегда влечет за собой операцию автоматического копирования, в то время как присваивания внутри одной и той же области хранения данных, копируются только в некоторых случаях для типов `storage`.
 
 ### Data location
 ### Место хранения данных/Расположение данных
@@ -1385,7 +1385,7 @@ If you can, try to use calldata as data location because it will avoid copies an
 
 RU
 > <c>ℹ️ Примечание</c>
-Если есть возможность, старайтесь использовать `calldata` в качестве места хранения данных, так как это позволяет избежать копированя и гарантирует, что данные не могут быть изменены. Массивы и структуры расположенные в `calldata` также могут быть возвращены из функций, но `allocate`(выделить память) такие типы невозможно.
+Если есть возможность, старайтесь использовать `calldata` в качестве места хранения данных, так как это позволяет избежать копирования и гарантирует, что данные не могут быть изменены. Массивы и структуры расположенные в `calldata` также могут быть возвращены из функций, но `allocate`(выделить память) такие типы невозможно.
 
 EN
 Note
@@ -1393,7 +1393,7 @@ Prior to version 0.6.9 data location for reference-type arguments was limited to
 
 RU
 > <c>ℹ️ Примечание</c>
-До версии 0.6.9 место хранения данных для ссылочного типа было огранично областью `calldata` во внешних функция, `memory` в публичных функциях, и либо `memory`, либо `storage` во внутренних и приватных функцияъ. Теперь `memory` и `calldata` разрешены во всех функциях, независимо от их видимости.
+До версии 0.6.9 место хранения данных для ссылочного типа было ограничено областью `calldata` во внешних функция, `memory` в публичных функциях, и либо `memory`, либо `storage` во внутренних и приватных функция. Теперь `memory` и `calldata` разрешены во всех функциях, независимо от их видимости.
 
 EN
 Note
@@ -2259,13 +2259,13 @@ EN
 Mapping types use the syntax mapping(KeyType KeyName? => ValueType ValueName?) and variables of mapping type are declared using the syntax mapping(KeyType KeyName? => ValueType ValueName?) VariableName. The KeyType can be any built-in value type, bytes, string, or any contract or enum type. Other user-defined or complex types, such as mappings, structs or array types are not allowed. ValueType can be any type, including mappings, arrays and structs. KeyName and ValueName are optional (so mapping(KeyType => ValueType) works as well) and can be any valid identifier that is not a type.
 
 RU
-`mapping(KeyType KeyName? => ValueType ValueName?)` `mapping(KeyType KeyName? => ValueType ValueName?) VariableName`. `KeyType` `bytes`, `string` `KeyName` `ValueName` (`mapping(KeyType => ValueType)`)
+Сопоставления используют следующий синтаксис `mapping(KeyType KeyName? => ValueType ValueName?)`, а переменные типа `mapping` объявляются с помощью синтаксиса `mapping(KeyType KeyName? => ValueType ValueName?) VariableName`. В качестве `KeyType` может выступать любой встроенный тип значения, `bytes`, `string`, а также любой контракт или перечисление. Другие определенные пользователем или сложные типы, такие как сопоставления, стукртуры или массивы не допускаются.`ValueType` может быть любым типом, включая сопоставления, массивы и структуры. `KeyName` и `ValueName` не являются обязательными (поэтому `mapping(KeyType => ValueType)` так же работает) и могут быть любым допустимым идентификатором, не являющимся типом.
 
 EN
 You can think of mappings as hash tables, which are virtually initialised such that every possible key exists and is mapped to a value whose byte-representation is all zeros, a type’s default value. The similarity ends there, the key data is not stored in a mapping, only its keccak256 hash is used to look up the value.
 
 RU
-`keccak256`
+Можно представить сопоставления в виде хэш-таблиц, которые виртуально инициализируются таким образом, что все возможные ключи существуют и сопоставляются со значением, байт-представлением которого являются все нули, т.е. значение типа по умолчанию. На этом сходство заканчиваетс, основные/ключевые данные в `mapping` в сопоставлении не хранятся, для поиска значения используется только его хэш `keccak256`.
 
 EN
 Because of this, mappings do not have a length or a concept of a key or value being set, and therefore cannot be erased without extra information regarding the assigned keys (see Clearing Mappings).
@@ -2277,11 +2277,10 @@ EN
 Mappings can only have a data location of storage and thus are allowed for state variables, as storage reference types in functions, or as parameters for library functions. They cannot be used as parameters or return parameters of contract functions that are publicly visible. These restrictions are also true for arrays and structs that contain mappings.
 
 RU
-Сопоставления могут только располагаться в `storage` области и поэтому допустимы для переменных состояния, в качестве ссылочных типов в функциях или в качестве параметров библиотечных функций. Они не могут использоваться в качестве параметров или возвращаемых параметров контрактных функций, которые являются общедоступными(публичными). Эти ограничения справедливы для массивов и структур, содержащих сопоставления.
+Сопоставления могут только располагаться в `storage` области и поэтому допустимы для переменных состояния, в качестве ссылочных типов в функциях или в качестве параметров библиотечных функций. Они не могут использоваться в качестве параметров или возвращаемых параметров контрактных функций, которые являются общедоступными(публичными). Эти ограничения справедливы для массивов и структур, содержащих сопоставления. 
 
 EN
 You can mark state variables of mapping type as public and Solidity creates a getter for you. The KeyType becomes a parameter with name KeyName (if specified) for the getter. If ValueType is a value type or a struct, the getter returns ValueType with name ValueName (if specified). If ValueType is an array or a mapping, the getter has one parameter for each KeyType, recursively.
-
 
 RU
 `public` `getter` `KeyType` `KeyName` `ValueType` `ValueType` `ValueName` `Valuetype` `KeyType`

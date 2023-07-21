@@ -2283,10 +2283,33 @@ EN
 You can mark state variables of mapping type as public and Solidity creates a getter for you. The KeyType becomes a parameter with name KeyName (if specified) for the getter. If ValueType is a value type or a struct, the getter returns ValueType with name ValueName (if specified). If ValueType is an array or a mapping, the getter has one parameter for each KeyType, recursively.
 
 RU
-`public` `getter` `KeyType` `KeyName` `ValueType` `ValueType` `ValueName` `Valuetype` `KeyType`
+Вы можете отметить переменные состояние типа `mapping` как `public` и Solidity создаст для вас `геттер(getter)`. `KeyType` становится параметром с именем `KeyName` (если указано) для геттера. Если `ValueType` - это тип значения или структуры, то геттер возвращает `ValueType` с именем `ValueName` (если указано). Если `ValueType` является массивом или сопоставлением, геттер имеет по одному параметру для каждого `KeyType`, рекурсивно.
 
 EN
 In the example below, the MappingExample contract defines a public balances mapping, with the key type an address, and a value type a uint, mapping an Ethereum address to an unsigned integer value. As uint is a value type, the getter returns a value that matches the type, which you can see in the MappingUser contract that returns the value at the specified address.
 
 RU
-`MappingExample` `balances` `address` `uint` `uint` `MappingUser`
+В приведенном ниже примере, в контракте `MappingExample` определяется сопоставление `balances` как публичный, с типом ключа как `address`, и типом значения `uint`, сопоставляя Ethereum адрес с беззнаковым целочисленным значением. Поскольку `uint` является типом значения, геттер возвращает значение, соответствующего типа, что можно видеть в контракте `MappingUser`, который возвращает значение указанного адреса.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity >=0.4.0 <0.9.0;
+
+contract MappingExample {
+
+    // Создаст для нас геттер
+    mapping(address => uint) public balances;
+
+    function update(uint newBalance) public {
+        balances[msg.sender] = newBalance;
+    }
+}
+
+contract MappingUser {
+    function f() public returns (uint) {
+        MappingExample m = new MappingExample();
+        m.update(100);
+        return m.balances(address(this));
+    }
+}
+```

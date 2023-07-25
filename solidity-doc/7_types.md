@@ -2362,6 +2362,7 @@ contract MappingExample {
         return _allowances[owner][spender];
     }
 
+    // sender - отправитель
     function transferFrom(address sender, address recipient, uint256 amount) public returns (bool) {
         require(_allowances[sender][msg.sender] >= amount, "ERC20: Allowance not high enough.");
         _allowances[sender][msg.sender] -= amount;

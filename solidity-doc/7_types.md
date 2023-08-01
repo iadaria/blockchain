@@ -2814,13 +2814,54 @@ contract DeleteExample {
         delete x; // сбрасываем `x`, присваиваем 0, не влияет на переменную `data`
         delete data; // сбрасываем `data`, не оказывает влияние на `x`
         uint[] storage y = dataArray;
-        delete dataArray; // это сбрасывает длину
-        // this sets dataArray.length to zero, but as uint[] is a complex object, also
+        delete dataArray; // сбрасываем длину `dataArray.length` в ноль, но
+        // т.к. `uint[]` является сложным объектом, также это влияет на `y`,
+        // который ялвяется псевдонимом `storage` объекта
 
-        // y is affected which is an alias to the storage object
         // On the other hand: "delete y" is not valid, as assignments to local variables
-        // referencing storage objects can only be made from existing storage objects.
+        // referencing storage objects can only be made from existing storage objects
+        // С другой стороны: `delete y` недопустимо, так как присваивания локальным переменным
+        // ссылающиеся на `sotrage` объекты, могут выполняться только из существующих `storage` объектов
+
         assert(y.length == 0);
     }
 }
 ```
+
+### Order of Precedence of Operators
+
+### Порядок приоритетов операторов
+
+EN
+The following is the order of precedence for operators, listed in order of evaluation.
+
+RU
+Ниже приведен порядок старшинства операторов, перечисленных в последовательности их вычисления.
+
+| Приоритет | Описание                            | Оператор                                 |
+| --------- | ----------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| 1         | Постфиксное увеличение и уменьшение | `++`, `--``                              |
+|           | Выражение `new`                     | `new <typename>`                         |
+|           | Arrya subscripting                  | `<array>[<index>]`                       |
+|           | Доступ к члену-свойству             | `<object>.<member>`                      |
+|           | Вызов функции                       | `<func>(<args...>)`                      |
+|           | Скобки                              | `(<statement>)`                          |
+| 2         | Префиксное увеличение и уменьшение  | ` ++`, `--`                              |
+|           | Унарный минус                       | `-`                                      |
+|           | Унарные операции                    | `delete`                                 |
+|           | Логиеское NOT                       | `!`                                      |
+|           | Побитовое NOT                       | `~`                                      |
+| 3         | Возведение в степень                | `**`                                     |
+| 4         | Умножение, деление и модуль         | `*`, `/`, `%`                            |
+| 5         | Сложение и вычитание                | `+`, `-`                                 |
+| 6         | Операторы побитового сдвига         | `<<`, `>>`                               |
+| 7         | Побитовый AND                       | `&`                                      |
+| 8         | Побитовый XOR                       | `^`                                      |
+| 9         | Побитовый OR                        |                                          |
+| 10        | Операторы неравенства               | `<`, `>`, `<=`, `>=`                     |
+| 11        | Операторы равенства                 | `==`, `!=`                               |
+| 12        | Логическое AND                      | `&&`                                     |
+| 13        | Логическое OR                       |                                          |
+| 14        | Тернарный оператор                  | `<conditional> ? <if-true> : <if-false>` |
+|           | Операторы присваивания              | `=`, `                                   | =`, `^=`, `&=`, `<<=`, `>>=`, `+=`, `-=`, `\*=`, `/=`, `%=` |
+| 15        | Запятая                             | `,`                                      |

@@ -3082,7 +3082,7 @@ bytes2 f = "xyz"; // not allowed
 
 ### Addresses
 
-###
+### Адреса
 
 EN
 As described in Address Literals, hex literals of the correct size that pass the checksum test are of address type. No other literals can be implicitly converted to the address type.

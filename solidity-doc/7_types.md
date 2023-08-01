@@ -3042,6 +3042,66 @@ Note
 Prior to version 0.8.0, any decimal or hexadecimal number literals could be explicitly converted to an integer type. From 0.8.0, such explicit conversions are as strict as implicit conversions, i.e., they are only allowed if the literal fits in the resulting range.
 
 RU
-
 <c>ℹ️ Примечание</c>
 До версии 0.8.0 любые литералы десятичных или шестнадцатеричных чисел могли быть явно преобразованы к целочисленному типу. Начиная с версии 0.8.0, такие явные преобразования являются такими же строгими, как и неявные, т.е. они разрешены только в том случае, если литерал помещается в полученный диапазон.
+
+### Fixed-Size Byte Arrays
+
+###
+
+EN
+Decimal number literals cannot be implicitly converted to fixed-size byte arrays. Hexadecimal number literals can be, but only if the number of hex digits exactly fits the size of the bytes type. As an exception both decimal and hexadecimal literals which have a value of zero can be converted to any fixed-size bytes type:
+
+RU
+Десятичные числовые литералы не могут быть неявно преобразованы в байтовые массивы фиксированного размера. Шестнадцатеричные литералы можно, но только в том случае, если количество шестнадцатеричных цифр точно соответствует размеру типа байт. В качестве исключения десятичные и шестнадцатеричные литералы, имеющие значение ноль, могут быть преобразованы в любой байтовый тип фиксированного размера:
+
+```java
+bytes2 a = 54321; // not allowed
+bytes2 b = 0x12; // not allowed
+bytes2 c = 0x123; // not allowed
+bytes2 d = 0x1234; // fine
+bytes2 e = 0x0012; // fine
+bytes4 f = 0; // fine
+bytes4 g = 0x0; // fine
+```
+
+EN
+String literals and hex string literals can be implicitly converted to fixed-size byte arrays, if their number of characters matches the size of the bytes type:
+
+RU
+Строковые литералы и шестнадцатеричные строковые литералы могут быть неявно преобразованы в байтовые массивы фиксированного размера, если количество символов в них соответствует размеру типа bytes:
+
+```java
+bytes2 a = hex"1234"; // fine
+bytes2 b = "xy"; // fine
+bytes2 c = hex"12"; // not allowed
+bytes2 d = hex"123"; // not allowed
+bytes2 e = "x"; // not allowed
+bytes2 f = "xyz"; // not allowed
+```
+
+### Addresses
+
+### Адреса
+
+EN
+As described in Address Literals, hex literals of the correct size that pass the checksum test are of address type. No other literals can be implicitly converted to the address type.
+
+Explicit conversions to address are allowed only from bytes20 and uint160.
+
+An address a can be converted explicitly to address payable via payable(a).
+
+RU
+Как описано в разделе "Адресные литералы", шестнадцатеричные литералы правильного размера, прошедшие проверку контрольной суммы, имеют тип адреса. Никакие другие литералы не могут быть неявно преобразованы к адресному типу.
+
+Явное преобразование в `address` допускается только из `bytes20` и `uint160`.
+
+`Address a` может быть явно преобразован в `address payable` через `payable(a)`.
+
+EN
+Note
+Prior to version 0.8.0, it was possible to explicitly convert from any integer type (of any size, signed or unsigned) to address or address payable. Starting with in 0.8.0 only conversion from uint160 is allowed.
+
+RU
+<c>ℹ️ Примечание</c>
+До версии 0.8.0 было возможно явное преобразование из любого целочисленного типа (любого размера, знакового или беззнакового) в `address` или `address payable`. Начиная с версии 0.8.0 допускается только преобразование из `uint160``.

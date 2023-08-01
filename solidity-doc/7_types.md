@@ -2839,7 +2839,7 @@ RU
 Ниже приведен порядок старшинства операторов, перечисленных в последовательности их вычисления.
 
 | Приоритет | Описание                            | Оператор                                 |
-| --------- | ----------------------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| --------- | ----------------------------------- | ---------------------------------------- |
 | 1         | Постфиксное увеличение и уменьшение | `++`, `--``                              |
 |           | Выражение `new`                     | `new <typename>`                         |
 |           | Arrya subscripting                  | `<array>[<index>]`                       |
@@ -2863,5 +2863,185 @@ RU
 | 12        | Логическое AND                      | `&&`                                     |
 | 13        | Логическое OR                       |                                          |
 | 14        | Тернарный оператор                  | `<conditional> ? <if-true> : <if-false>` |
-|           | Операторы присваивания              | `=`, `                                   | =`, `^=`, `&=`, `<<=`, `>>=`, `+=`, `-=`, `\*=`, `/=`, `%=` |
+|           | Операторы присваивания              | `=`, `^=`, `&=`, `<<=`, `>>=`, `+=`      |
 | 15        | Запятая                             | `,`                                      |
+
+## Conversions between Elementary Types
+
+## Преобразования между простыми типами
+
+### Implicit Conversions
+
+### Неявное преобразование
+
+EN
+An implicit type conversion is automatically applied by the compiler in some cases during assignments, when passing arguments to functions and when applying operators. In general, an implicit conversion between value-types is possible if it makes sense semantically and no information is lost.
+
+RU
+Неявное приведение типов автоматически применяется компилятором в некоторых случаях при присваивании, при передаче аргументов функциям и при применении операторов. В общем случае неявное преобразование между типами значений возможно, если оно имеет семантический смысл и при этом не теряется информация.
+
+EN
+For example, uint8 is convertible to uint16 and int128 to int256, but int8 is not convertible to uint256, because uint256 cannot hold values such as -1.
+
+RU
+Например, `uint8` конвертируется в `uint16`, а `uint128` - в `uint256`, но `int8` не конвертируется в `uint256`, поскольку `uint 256` не может хранить значения типа `-1`.
+
+EN
+If an operator is applied to different types, the compiler tries to implicitly convert one of the operands to the type of the other (the same is true for assignments). This means that operations are always
+performed in the type of one of the operands.
+
+RU
+Если оператор применяется к разным типам, компилятор пытается неявно преобразовать один из операндов к типу другого (то же самое справедливо и для присваиваний). Это означает, что операции всегда выполняются в типе одного из операндов
+
+EN
+For more details about which implicit conversions are possible, please consult the sections about the types themselves.
+
+RU
+Подробнее о том, какие неявные преобразования возможны, читайте в разделах, посвященных самим типам.
+
+EN
+In the example below, y and z, the operands of the addition, do not have the same type, but uint8 can be implicitly converted to uint16 and not vice-versa. Because of that, y is converted to the type of z before the addition is performed in the uint16 type. The resulting type of the expression y + z is uint16. Because it is assigned to a variable of type uint32 another implicit conversion is performed after the addition.
+
+RU
+В приведенном ниже примере операнды сложения `y` и `z` не имеют одинакового типа, но `uint8` может быть неявно преобразован в `uint16`, а не наоборот. Поэтому перед выполнением сложения в типе `uint16` `y` преобразуется к типу `z`. Результирующий тип выражения `y + z` - это `uint16`. И поскольку оно присваивается переменной типа `uint32`, после сложения выполняется еще одно неявное преобразование.
+
+```typescript
+uint8 y;
+uint16 z;
+uint32 x = y + z;
+```
+
+### Explicit Conversions
+
+### Явные преобразования
+
+EN
+If the compiler does not allow implicit conversion but you are confident a conversion will work, an explicit type conversion is sometimes possible. This may result in unexpected behavior and allows you to bypass some security features of the compiler, so be sure to test that the result is what you want and expect!
+
+Take the following example that converts a negative int to a uint:
+
+RU
+Если компилятор не разрешает неявное преобразование, но вы уверены, что преобразование будет работать, то иногда можно использовать явное приведение типа. Это может привести к неожиданному поведению и позволит обойти некоторые защитные функции компилятора, поэтому обязательно проверьте, что результат будет соответствовать вашим ожиданиям!
+
+Приведем следующий пример, преобразующий отрицательный `int` в `uint`:
+
+```java
+int  y = -3;
+uint x = uint(y);
+```
+
+EN
+At the end of this code snippet, `x` will have the value 0xfffff..fd (64 hex characters), which is -3 in the two’s complement representation of 256 bits.
+
+If an integer is explicitly converted to a smaller type, higher-order bits are cut off:
+
+RU
+В конце этого фрагмента кода ` x`` будет иметь значение  `0xfffff..fd`(64 шестнадцатеричных символа), что в двоичном представлении 256 бит равно`-3``.
+
+Приведем следующий пример, преобразующий отрицательный `int` в `uint`:
+
+```java
+uint32 a = 0x12345678;
+uint16 b = uint16(a); // `b` будет теперь `0x5678`
+```
+
+EN
+If an integer is explicitly converted to a larger type, it is padded on the left (i.e., at the higher order end). The result of the conversion will compare equal to the original integer:
+
+RU
+Если целое число явно преобразуется к большему типу, то оно добавляется слева (т.е. со стороны старшего порядка). Результат преобразования будет равен исходному целому числу:
+
+```java
+uint16 a = 0x1234;
+uint32 b = uint32(a); // `b` теперь будет `0x00001234`
+assert(a == b);
+```
+
+EN
+Fixed-size bytes types behave differently during conversions. They can be thought of as sequences of individual bytes and converting to a smaller type will cut off the sequence:
+
+RU
+Типы байтов фиксированного размера ведут себя при преобразованиях по-другому. Их можно рассматривать как последовательности отдельных байтов, и при преобразовании к меньшему типу последовательность будет прервана:
+
+```java
+bytes2 a = 0x1234;
+bytes1 b = bytes1(a); // `b` будет `0x12`
+```
+
+EN
+If a fixed-size bytes type is explicitly converted to a larger type, it is padded on the right. Accessing the byte at a fixed index will result in the same value before and after the conversion (if the index is still in range):
+
+RU
+Если тип байт фиксированного размера явно преобразуется к большему типу, то он подбивается справа. Обращение к байту с фиксированным индексом приведет к одному и тому же значению до и после преобразования (если индекс все еще находится в диапазоне):
+
+```java
+bytes2 a = 0x1234;
+bytes4 b = bytes4(a); // `b` будет `0x12340000`
+assert(a[0] == b[0]);
+assert(a[1] == b[1]);
+```
+
+EN
+Since integers and fixed-size byte arrays behave differently when truncating or padding, explicit conversions between integers and fixed-size byte arrays are only allowed, if both have the same size. If you want to convert between integers and fixed-size byte arrays of different size, you have to use intermediate conversions that make the desired truncation and padding rules explicit:
+
+RU
+Поскольку целые числа и байтовые массивы фиксированного размера ведут себя по-разному при усечении или заполнении, явные преобразования между целыми числами и байтовыми массивами фиксированного размера допустимы только в том случае, если они имеют одинаковый размер. Если требуется преобразование между целыми числами и байтовыми массивами фиксированного размера разного размера, то необходимо использовать промежуточные преобразования, которые делают желаемые правила усечения и заполнения явными:
+
+```java
+bytes2 a = 0x1234;
+uint32 b = uint16(a); // b will be 0x00001234
+uint32 c = uint32(bytes4(a)); // c will be 0x12340000
+uint8 d = uint8(uint16(a)); // d will be 0x34
+uint8 e = uint8(bytes1(a)); // e will be 0x12
+```
+
+EN
+bytes arrays and bytes calldata slices can be converted explicitly to fixed bytes types (bytes1/…/bytes32). In case the array is longer than the target fixed bytes type, truncation at the end will happen. If the array is shorter than the target type, it will be padded with zeros at the end.
+
+RU
+`bytes` массивы и срезы `bytes calldata` могут быть явно преобразованы к фиксированным типам bytes (`bytes1`/.../`bytes32`). Если массив длиннее целевого фиксированного байтового типа, то произойдет усечение в конце. Если массив короче целевого типа, то в его конце будут проставлены нули.
+
+```java
+// SPDX-License-Identifier: GPL-3.0
+pragma solidity ^0.8.5;
+
+contract C {
+    bytes s = "abcdefgh";
+    function f(bytes calldata c, bytes memory m) public view returns (bytes16, bytes3) {
+        require(c.length == 16, "");
+        bytes16 b = bytes16(m);  // if length of m is greater than 16, truncation will happen
+        b = bytes16(s);  // padded on the right, so result is "abcdefgh\0\0\0\0\0\0\0\0"
+        bytes3 b1 = bytes3(s); // truncated, b1 equals to "abc"
+        b = bytes16(c[:8]);  // also padded with zeros
+        return (b, b1);
+    }
+}
+```
+
+## Conversions between Literals and Elementary Types
+
+## Преобразования между литералами и простыми типами
+
+### Integer Types
+
+### Целочисленный тип
+
+EN
+Decimal and hexadecimal number literals can be implicitly converted to any integer type that is large enough to represent it without truncation:
+
+RU
+
+```java
+uint8 a = 12; // fine
+uint32 b = 1234; // fine
+uint16 c = 0x123456; // не получится, так как придется усекать до  `0x3456`
+```
+
+EN
+Note
+Prior to version 0.8.0, any decimal or hexadecimal number literals could be explicitly converted to an integer type. From 0.8.0, such explicit conversions are as strict as implicit conversions, i.e., they are only allowed if the literal fits in the resulting range.
+
+RU
+
+<c>ℹ️ Примечание</c>
+До версии 0.8.0 любые литералы десятичных или шестнадцатеричных чисел могли быть явно преобразованы к целочисленному типу. Начиная с версии 0.8.0, такие явные преобразования являются такими же строгими, как и неявные, т.е. они разрешены только в том случае, если литерал помещается в полученный диапазон.
